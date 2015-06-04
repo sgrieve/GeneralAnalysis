@@ -27,7 +27,7 @@ rcParams['font.size'] = 16
 
 #input filename and path here and output path
 path = ''
-filename = '_Window_Size_Data.txt'
+filename = 'GM_DEM_Window_Size_Data.txt'
 outpath = path
                         
 with open(path+filename, "r") as f:
@@ -38,13 +38,13 @@ with open(path+filename, "r") as f:
 #Length_scale Curv_mean Curv_stddev Curv_iqr    
 
 std_dev_curv = []
-length_scale = []
+window_size = []
 curv = []
 iqr_curv = []
     
 #load data into lists    
 for d in data:
-    length_scale.append(float(d.split()[0]))
+    window_size.append(float(d.split()[0]))
     curv.append(float(d.split()[1]))    
     std_dev_curv.append(float(d.split()[2]))
     iqr_curv.append(float(d.split()[3]))
@@ -52,15 +52,15 @@ for d in data:
 plt.suptitle('Window size and curvature', fontsize=18)
 
 plt.subplot(3,1,1)    
-plt.plot(length_scale,iqr_curv,'k^')
+plt.plot(window_size,iqr_curv,'k^')
 plt.ylabel('IQR of Curvature (1/m)')
 
 plt.subplot(3,1,2)
-plt.plot(length_scale,curv,'k^')
+plt.plot(window_size,curv,'k^')
 plt.ylabel('Mean Hilltop\n Curvature (1/m)')
 
 plt.subplot(3,1,3)
-plt.plot(length_scale,std_dev_curv,'k^')
+plt.plot(window_size,std_dev_curv,'k^')
 plt.xlabel('Length Scale (m)')
 plt.ylabel('Std Dev of Hilltop\n Curvature (1/m)')
 
