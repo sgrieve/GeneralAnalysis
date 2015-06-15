@@ -125,10 +125,8 @@ def GetBestFitSc(Method, RawData, PatchData):
     elif Method.lower() == 'raw':
         pass
     elif Method.lower() == 'patches':
-        
-        print len(PatchData[9])
-        
-        Fit_Sc,_ = optimize.leastsq(Residuals, ScInit, args=(PatchData[9], PatchData[1], PatchData[5]),full_output=False)
+                
+        Fit_Sc,_,_,_,_ = optimize.leastsq(Residuals, ScInit, args=(PatchData[9], PatchData[1], PatchData[5]),full_output=True)
        
     return Fit_Sc[0]    
 
