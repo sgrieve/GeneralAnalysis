@@ -117,16 +117,19 @@ def Calculate_E_R_Star(lh,cht,r,Sc):
 
 def GetBestFitSc(Method, RawData, PatchData):
 
-    ScInit = 0.8  # Need to have an initial for the optimizer, any valid Sc value can be used - will not impact the final value
+    ScInit = 0.8  # Need to have an initial for the optimizer, any valid Sc value can be used - will not impact the final value    
+    Fit_Sc = [] #Need to initialize this in case Method is incorrectly defined. Need some error handling!
     
-    if Method.lower() is 'bins':
+    if Method.lower() == 'bins':
         pass
-    elif Method.lower() is 'raw':
+    elif Method.lower() == 'raw':
         pass
-    if Method.lower() is 'patches':
-        PatchData
-        Fit_Sc,_ = optimize.leastsq(Residuals, ScInit, args=(R, LH, CHT),full_output=False)
-    
+    elif Method.lower() == 'patches':
+        
+        print len(PatchData[9])
+        
+        Fit_Sc,_ = optimize.leastsq(Residuals, ScInit, args=(PatchData[9], PatchData[1], PatchData[5]),full_output=False)
+       
     return Fit_Sc[0]    
 
 def Labels():
@@ -159,5 +162,7 @@ def MakeThePlot(Path,Prefix,RawFlag,BinFlag,PatchFlag,Format='png'):
 
 RawData,PatchData = LoadData('C:\\Users\\Stuart\\Desktop\\FR\\er_data\\','CR2_gn_s')
 
-print PatchData[1]
+sc =  GetBestFitSc('patches', RawData, PatchData)
+
+print sc
         
