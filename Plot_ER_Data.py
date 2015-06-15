@@ -6,6 +6,7 @@ Created on Thu Jun 11 14:01:05 2015
 
 """
 import matplotlib.pyplot as plt
+from matplotlib import rcParams
 import numpy as np
 
 def LoadData(Path,Prefix):
@@ -53,9 +54,28 @@ def LoadData(Path,Prefix):
     return RawData,PatchData
 
 def SetUpPlot():
-    pass
+    #returning ax for now, may not need to expose it like this.
+    rcParams['font.family'] = 'sans-serif'
+    rcParams['font.sans-serif'] = ['arial']
+    rcParams['font.size'] = 14
+    
+    ax = plt.gca()    
+    
+    ax.set_yscale('log')
+    ax.set_xscale('log')
+
+    plt.xlabel('Dimensionless Erosion Rate, E*')
+    plt.ylabel('Dimensionless Relief, R*')
+    
+    plt.ylim(0.1,1)
+    plt.xlim(0.1,1000)
+
+    return ax    
 
 def PlotRaw(Sc):
+        
+    
+    
     pass
 
 def PlotBins(Sc):
@@ -85,21 +105,21 @@ def Calculate_E_R_Star(lh,cht,r,Sc):
     
     return E_Star, RStar
 
-def GetBestFitSc(method):
+def GetBestFitSc(Method, RawData, PatchData):
 
-    if method.lower() is 'bins':
+    if Method.lower() is 'bins':
         pass
-    elif method.lower() is 'raw':
+    elif Method.lower() is 'raw':
         pass
-    if method.lower() is 'patches':
+    if Method.lower() is 'patches':
         pass
     
     Sc = 0.8    
     return Sc
 
 def Labels():
-    pass
-
+    plt.legend(loc=4)
+    
 def SavePlot(Path,Prefix,Format):
     plt.savefig(Path+Prefix+'E_R_Star.'+Format,dpi=500)
 
@@ -107,9 +127,9 @@ def MakeThePlot(Path,Prefix,RawFlag,BinFlag,PatchFlag,Format='png'):
     
     RawData,PatchData = LoadData(Path,Prefix)
     
-    SetUpPlot()
+    ax = SetUpPlot()
     
-    Sc = GetBestFitSc('patches')
+    Sc = GetBestFitSc('patches', RawData, PatchData)
     
     DrawCurve()
     
