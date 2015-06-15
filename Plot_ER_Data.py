@@ -64,17 +64,26 @@ def PlotBins(Sc):
 def PlotPatches(Sc):
     pass
 
-def DrawCurve():
-    pass
-
+def DrawCurve():    
+    #plot the e* r* curve from roering 2007
+    x = np.arange(0.01, 1000, 0.1)
+    y = (1./x) * (np.sqrt(1.+(x*x)) - np.log(0.5*(1. + np.sqrt(1.+(x*x)))) - 1.)
+    
+    plt.plot(x, y, 'k-', linewidth=2, label='Nonlinear Flux Law')
+    
+    
 def Calculate_E_R_Star(lh,cht,r,Sc):
     #will need to look at propagating errors
     #this method will be used to get the E*R* values for
     #whatever type of input data we have, either raw, binned or patches
     #and in the case of patches and bins, it will also do somehting with the 
     #std err or std dev values
-    E_Star,RStar = []
-    return E_Star,RStar
+    #returns 2 numpy arrays of the E* and R* values
+    
+    E_Star = (2. * np.fabs(cht) * lh) / Sc
+    RStar = (r / lh) / Sc
+    
+    return E_Star, RStar
 
 def GetBestFitSc(method):
 
@@ -116,4 +125,3 @@ def MakeThePlot(Path,Prefix,RawFlag,BinFlag,PatchFlag,Format='png'):
     
     SavePlot(Path,Prefix,Format)
           
-    
