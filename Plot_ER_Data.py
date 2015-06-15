@@ -8,6 +8,7 @@ Created on Thu Jun 11 14:01:05 2015
 import matplotlib.pyplot as plt
 from matplotlib import rcParams
 import numpy as np
+import scipy.optimize as optimize
 
 def LoadData(Path,Prefix):
 
@@ -15,7 +16,7 @@ def LoadData(Path,Prefix):
     #not using genfromtext as I want access to individual elements
     #for debugging, may change in future
     with open(Path+Prefix+'_E_R_Star_Raw_Data.csv','r') as raw:
-        no_of_cols = len(raw.readline().split())
+        no_of_cols = len(raw.readline().split(','))
         rawdata = raw.readlines()
 
     #want the data in a 2d array to make moving the values about simpler
@@ -35,7 +36,7 @@ def LoadData(Path,Prefix):
     
     #Next, repeat the process for the patch data
     with open(Path+Prefix+'_E_R_Star_Patch_Data.csv','r') as patch:
-        no_of_cols = len(patch.readline().split())
+        no_of_cols = len(patch.readline().split(','))
         patchdata = patch.readlines()
 
     #dimensions will be 17Xlen(rawdata) no_of_cols = 17
@@ -46,9 +47,9 @@ def LoadData(Path,Prefix):
         
     PatchData = np.zeros((no_of_cols,no_of_lines),dtype='float64')
     
-    for i,r in enumerate(rawdata):
+    for i,r in enumerate(patchdata):
         split = r.split(',')
-        for a in range(no_of_cols):    
+        for a in range(no_of_cols):  
             PatchData[a][i] = split[a]        
 
     return RawData,PatchData
@@ -73,9 +74,6 @@ def SetUpPlot():
     return ax    
 
 def PlotRaw(Sc):
-        
-    
-    
     pass
 
 def PlotBins(Sc):
@@ -84,14 +82,25 @@ def PlotBins(Sc):
 def PlotPatches(Sc):
     pass
 
+
+def R_Star_Model(x):
+    return (1./x) * (np.sqrt(1.+(x*x)) - np.log(0.5*(1. + np.sqrt(1.+(x*x)))) - 1.)
+    
+def E_Star(Sc,CHT,LH):
+    return (2.*np.fabs(CHT)*LH)/Sc
+    
+def R_Star(Sc, R, LH):
+    return R/(LH*Sc)
+    
+def Residuals(Sc, R, LH, CHT):
+    return R_Star_Model(E_Star(Sc,CHT,LH)) - R_Star(Sc, R, LH)
+
 def DrawCurve():    
     #plot the e* r* curve from roering 2007
-    x = np.arange(0.01, 1000, 0.1)
-    y = (1./x) * (np.sqrt(1.+(x*x)) - np.log(0.5*(1. + np.sqrt(1.+(x*x)))) - 1.)
-    
-    plt.plot(x, y, 'k-', linewidth=2, label='Nonlinear Flux Law')
-    
-    
+    x = np.arange(0.01, 1000, 0.1)        
+    plt.plot(x, R_Star_Model(x), 'k-', linewidth=2, label='Nonlinear Flux Law')
+
+"""    
 def Calculate_E_R_Star(lh,cht,r,Sc):
     #will need to look at propagating errors
     #this method will be used to get the E*R* values for
@@ -104,18 +113,21 @@ def Calculate_E_R_Star(lh,cht,r,Sc):
     RStar = (r / lh) / Sc
     
     return E_Star, RStar
+"""
 
 def GetBestFitSc(Method, RawData, PatchData):
 
+    ScInit = 0.8  # Need to have an initial for the optimizer, any valid Sc value can be used - will not impact the final value
+    
     if Method.lower() is 'bins':
         pass
     elif Method.lower() is 'raw':
         pass
     if Method.lower() is 'patches':
-        pass
+        PatchData
+        Fit_Sc,_ = optimize.leastsq(Residuals, ScInit, args=(R, LH, CHT),full_output=False)
     
-    Sc = 0.8    
-    return Sc
+    return Fit_Sc[0]    
 
 def Labels():
     plt.legend(loc=4)
@@ -144,4 +156,8 @@ def MakeThePlot(Path,Prefix,RawFlag,BinFlag,PatchFlag,Format='png'):
     Labels()
     
     SavePlot(Path,Prefix,Format)
-          
+
+RawData,PatchData = LoadData('C:\\Users\\Stuart\\Desktop\\FR\\er_data\\','CR2_gn_s')
+
+print PatchData[1]
+        
