@@ -51,6 +51,23 @@ def LoadData(Path,Prefix):
         split = r.split(',')
         for a in range(no_of_cols):  
             PatchData[a][i] = split[a]        
+    
+    print PatchData[13]    
+    mask = np.empty(PatchData.shape,dtype=bool)
+    
+    mask[:,:] = (PatchData[:,13] < 0.4)[:,np.newaxis]
+    
+    PatchData = np.ma.MaskedArray(PatchData,mask=mask)
+    
+    print PatchData[13]
+    
+    for p in PatchData[13]:
+        if p > 0.4:
+            print p
+    
+    
+    #np.ma.compress_rows(PatchData)
+    #np.ma.compress_rowcols()
 
     return RawData,PatchData
 
