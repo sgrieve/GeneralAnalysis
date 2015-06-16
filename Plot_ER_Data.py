@@ -79,8 +79,10 @@ def PlotRaw(Sc):
 def PlotBins(Sc):
     pass
 
-def PlotPatches(Sc):
-    pass
+def PlotPatches(Sc,PatchData):
+
+    plt.errorbar(E_Star(Sc,PatchData[5],PatchData[1]),R_Star(Sc,PatchData[9],PatchData[1]),
+    fmt='ro')    
 
 
 def R_Star_Model(x):
@@ -151,16 +153,17 @@ def MakeThePlot(Path,Prefix,RawFlag,BinFlag,PatchFlag,Format='png'):
     if BinFlag: 
         PlotBins(Sc)
     if PatchFlag:
-        PlotPatches(Sc)
+        PlotPatches(Sc,PatchData)
         
         
     Labels()
     
     SavePlot(Path,Prefix,Format)
 
-RawData,PatchData = LoadData('C:\\Users\\Stuart\\Desktop\\FR\\er_data\\','CR2_gn_s')
+MakeThePlot('C:\\Users\\Stuart\\Desktop\\FR\\er_data\\','CR2_gn_s',0,0,1,Format='png')
 
-sc =  GetBestFitSc('patches', RawData, PatchData)
+#RawData,PatchData = LoadData('C:\\Users\\Stuart\\Desktop\\FR\\er_data\\','CR2_gn_s')
 
-print sc
+#print GetBestFitSc('patches', RawData, PatchData)
+
         
