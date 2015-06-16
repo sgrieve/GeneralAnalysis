@@ -52,20 +52,26 @@ def LoadData(Path,Prefix):
         for a in range(no_of_cols):  
             PatchData[a][i] = split[a]        
     
-    print PatchData[13]    
-    mask = np.empty(PatchData.shape,dtype=bool)
     
-    mask[:,:] = (PatchData[:,13] < 0.4)[:,np.newaxis]
-    
-    PatchData = np.ma.MaskedArray(PatchData,mask=mask)
     
     print PatchData[13]
+    print len(PatchData)
     
-    for p in PatchData[13]:
-        if p > 0.4:
-            print p
+    PatchData = PatchData[np.logical_not(PatchData[:,13] > 0.4)]    
+     
+    print 'test'
+      
+    #mask = np.empty(PatchData.shape,dtype=bool)
+    #mask[:,:] = (PatchData[:,13] > 0.4)[:,np.newaxis]
+    #PatchData = np.ma.MaskedArray(PatchData,mask=mask)
     
+    print len(PatchData)
     
+    #for i,p in enumerate(PatchData[13]):
+    #    if p < 0.4:
+    #        print PatchData[1][i]
+        
+   
     #np.ma.compress_rows(PatchData)
     #np.ma.compress_rowcols()
 
@@ -100,7 +106,6 @@ def PlotPatches(Sc,PatchData):
 
     plt.errorbar(E_Star(Sc,PatchData[5],PatchData[1]),R_Star(Sc,PatchData[9],PatchData[1]),
     fmt='ro')    
-
 
 def R_Star_Model(x):
     return (1./x) * (np.sqrt(1.+(x*x)) - np.log(0.5*(1. + np.sqrt(1.+(x*x)))) - 1.)
@@ -177,7 +182,9 @@ def MakeThePlot(Path,Prefix,RawFlag,BinFlag,PatchFlag,Format='png'):
     
     SavePlot(Path,Prefix,Format)
 
-MakeThePlot('C:\\Users\\Stuart\\Desktop\\FR\\er_data\\','CR2_gn_s',0,0,1,Format='png')
+#MakeThePlot('C:\\Users\\Stuart\\Desktop\\FR\\er_data\\','CR2_gn_s',0,0,1,Format='png')
+
+MakeThePlot('','CR2_gn_s',0,0,1,Format='png')
 
 #RawData,PatchData = LoadData('C:\\Users\\Stuart\\Desktop\\FR\\er_data\\','CR2_gn_s')
 
