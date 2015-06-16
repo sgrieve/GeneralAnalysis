@@ -43,21 +43,72 @@ def LoadData(Path,Prefix):
     #and the row order will follow the header format in the input file:
     #Final_ID lh_means lh_medians lh_std_devs lh_std_errs cht_means cht_medians cht_std_devs cht_std_errs r_means r_medians r_std_devs r_std_errs s_means s_medians s_std_devs s_std_errs
 
-    no_of_lines = len(patchdata)
+
+    #do some gradient filtering
+    #wanted to do this with masked arrays but I can't get it to work on the 2d data
+    
+    filtercount = 0    
+    
+    for p in patchdata:
+        if (float(p.split(',')[13]) > 0.4):
+            filtercount += 1
+
+    print filtercount
+    no_of_lines = len(patchdata) - filtercount
+    
+    print no_of_lines
+        
         
     PatchData = np.zeros((no_of_cols,no_of_lines),dtype='float64')
     
-    for i,r in enumerate(patchdata):
-        split = r.split(',')
-        for a in range(no_of_cols):  
-            PatchData[a][i] = split[a]        
+    i = -1 #need this instead of enumerate as we only increment when the slope test passes    
+    #this deals with 0 indexing...
     
+    for p in patchdata:
+        split = p.split(',')
+        if (float(p.split(',')[13]) <= 0.4):
+            i+=1
+            for a in range(no_of_cols):
+                PatchData[a][i] = split[a]        
+        
+    """
+    print PatchData[13][1010]
+    #print PatchData[13]
+    #print len(PatchData)
     
+    #Slopes = PatchData[:][13]    
     
-    print PatchData[13]
-    print len(PatchData)
+    #print np.ma.masked_where(PatchData[:][13] > 0.4, PatchData[:][:])
     
-    PatchData = PatchData[np.logical_not(PatchData[:,13] > 0.4)]    
+    mask = np.repeat(PatchData[:,13]<0.4,PatchData.shape[1])    
+
+    print mask
+
+    masked_a = np.ma.array(PatchData[13],mask=mask)
+
+    #print masked_a[][1010]
+    
+    final = np.ma.compress_rowcols(masked_a,1)
+    
+    #print final    
+    
+    PatchData = final
+    
+    #print Slopes
+    
+    #Slopes2 = np.logical_not(Slopes > 0.4)
+    
+    #print Slopes2
+    
+    #print np.delete(PatchData,Slopes2,0)
+    
+    #np.ma.mask_cols()
+    
+    #np.ma.compress_rowcols()  #THIS CAN BE USED TO GET RID OF THE ROWS WHICH HAVE MASKED SLOPES IN THEM
+    
+    #PatchData = PatchData[:][np.logical_not(PatchData[:][13] > 0.4)]
+
+    #print np.logical_not(PatchData[:][13] > 0.4)       
      
     print 'test'
       
@@ -74,7 +125,8 @@ def LoadData(Path,Prefix):
    
     #np.ma.compress_rows(PatchData)
     #np.ma.compress_rowcols()
-
+    """
+    
     return RawData,PatchData
 
 def SetUpPlot():
@@ -181,10 +233,11 @@ def MakeThePlot(Path,Prefix,RawFlag,BinFlag,PatchFlag,Format='png'):
     Labels()
     
     SavePlot(Path,Prefix,Format)
+    
 
-#MakeThePlot('C:\\Users\\Stuart\\Desktop\\FR\\er_data\\','CR2_gn_s',0,0,1,Format='png')
+MakeThePlot('C:\\Users\\Stuart\\Desktop\\FR\\er_data\\','CR2_gn_s',0,0,1,Format='png')
 
-MakeThePlot('','CR2_gn_s',0,0,1,Format='png')
+#MakeThePlot('','CR2_gn_s',0,0,1,Format='png')
 
 #RawData,PatchData = LoadData('C:\\Users\\Stuart\\Desktop\\FR\\er_data\\','CR2_gn_s')
 
