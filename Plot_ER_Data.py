@@ -87,7 +87,7 @@ def PlotRaw(Sc,RawData):
     plt.scatter(E_Star(Sc,RawData[3],RawData[2]),R_Star(Sc,RawData[4],RawData[2]),
     marker='.',s=0.5,alpha=0.2)
     
-def PlotBins(Sc):
+def PlotBins(Sc,RawData):
     pass
 
 def PlotPatches(Sc,PatchData):
@@ -162,7 +162,7 @@ def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,BinFlag,PatchFlag,Format='png'):
     if RawFlag:
         PlotRaw(Sc,RawData)
     if BinFlag: 
-        PlotBins(Sc)
+        PlotBins(Sc,RawData)
     if PatchFlag:
         PlotPatches(Sc,PatchData)
           
