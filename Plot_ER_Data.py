@@ -37,9 +37,8 @@ def LoadData(Path,Prefix):
     # Mask out the rows where the mean slope is > 0.4                  
     RawMask = np.empty(RawData.shape,dtype=bool)
     RawMask[:,:] = (RawData[5,:] > 0.4)[np.newaxis,:]
-    RawMasked = np.ma.MaskedArray(RawData,mask=RawMask)        
-    RawData = np.ma.compress_rowcols(RawMasked,axis=1)      
-            
+    RawData = np.ma.MaskedArray(RawData,mask=RawMask)        
+                
     #Next, repeat the process for the patch data
     with open(Path+Prefix+'_E_R_Star_Patch_Data.csv','r') as patch:
         no_of_cols = len(patch.readline().split(','))
@@ -61,9 +60,8 @@ def LoadData(Path,Prefix):
     # Mask out the rows where the mean slope is > 0.4                  
     PatchMask = np.empty(PatchData.shape,dtype=bool)
     PatchMask[:,:] = (PatchData[13,:] > 0.4)[np.newaxis,:]
-    PatchMasked = np.ma.MaskedArray(PatchData,mask=PatchMask)        
-    PatchData = np.ma.compress_rowcols(PatchMasked,axis=1)    
-
+    PatchData = np.ma.MaskedArray(PatchData,mask=PatchMask)        
+    
     return RawData,PatchData
 
 def SetUpPlot():
