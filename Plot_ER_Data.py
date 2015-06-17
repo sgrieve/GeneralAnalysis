@@ -34,6 +34,12 @@ def LoadData(Path,Prefix):
             RawData[a][i] = split[a]        
     #now we have a transformed 2d array of our raw data
     
+    # Mask out the rows where the mean slope is > 0.4                  
+    RawMask = np.empty(RawData.shape,dtype=bool)
+    RawMask[:,:] = (RawData[5,:] > 0.4)[np.newaxis,:]
+    RawMasked = np.ma.MaskedArray(RawData,mask=RawMask)        
+    RawData = np.ma.compress_rowcols(RawMasked,axis=1)      
+            
     #Next, repeat the process for the patch data
     with open(Path+Prefix+'_E_R_Star_Patch_Data.csv','r') as patch:
         no_of_cols = len(patch.readline().split(','))
@@ -43,90 +49,21 @@ def LoadData(Path,Prefix):
     #and the row order will follow the header format in the input file:
     #Final_ID lh_means lh_medians lh_std_devs lh_std_errs cht_means cht_medians cht_std_devs cht_std_errs r_means r_medians r_std_devs r_std_errs s_means s_medians s_std_devs s_std_errs
 
-
-    #do some gradient filtering
-    #wanted to do this with masked arrays but I can't get it to work on the 2d data
-    
-    filtercount = 0    
-    
-    for p in patchdata:
-        if (float(p.split(',')[13]) > 0.4):
-            filtercount += 1
-
-    print filtercount
-    no_of_lines = len(patchdata) - filtercount
-    
-    print no_of_lines
-        
+    no_of_lines = len(patchdata)           
         
     PatchData = np.zeros((no_of_cols,no_of_lines),dtype='float64')
     
-    i = -1 #need this instead of enumerate as we only increment when the slope test passes    
-    #this deals with 0 indexing...
-    
-    for p in patchdata:
+    for i,p in enumerate(patchdata):
         split = p.split(',')
-        if (float(p.split(',')[13]) <= 0.4):
-            i+=1
-            for a in range(no_of_cols):
-                PatchData[a][i] = split[a]        
-        
-    """
-    print PatchData[13][1010]
-    #print PatchData[13]
-    #print len(PatchData)
-    
-    #Slopes = PatchData[:][13]    
-    
-    #print np.ma.masked_where(PatchData[:][13] > 0.4, PatchData[:][:])
-    
-    mask = np.repeat(PatchData[:,13]<0.4,PatchData.shape[1])    
+        for a in range(no_of_cols):
+            PatchData[a][i] = split[a]    
+                
+    # Mask out the rows where the mean slope is > 0.4                  
+    PatchMask = np.empty(PatchData.shape,dtype=bool)
+    PatchMask[:,:] = (PatchData[13,:] > 0.4)[np.newaxis,:]
+    PatchMasked = np.ma.MaskedArray(PatchData,mask=PatchMask)        
+    PatchData = np.ma.compress_rowcols(PatchMasked,axis=1)    
 
-    print mask
-
-    masked_a = np.ma.array(PatchData[13],mask=mask)
-
-    #print masked_a[][1010]
-    
-    final = np.ma.compress_rowcols(masked_a,1)
-    
-    #print final    
-    
-    PatchData = final
-    
-    #print Slopes
-    
-    #Slopes2 = np.logical_not(Slopes > 0.4)
-    
-    #print Slopes2
-    
-    #print np.delete(PatchData,Slopes2,0)
-    
-    #np.ma.mask_cols()
-    
-    #np.ma.compress_rowcols()  #THIS CAN BE USED TO GET RID OF THE ROWS WHICH HAVE MASKED SLOPES IN THEM
-    
-    #PatchData = PatchData[:][np.logical_not(PatchData[:][13] > 0.4)]
-
-    #print np.logical_not(PatchData[:][13] > 0.4)       
-     
-    print 'test'
-      
-    #mask = np.empty(PatchData.shape,dtype=bool)
-    #mask[:,:] = (PatchData[:,13] > 0.4)[:,np.newaxis]
-    #PatchData = np.ma.MaskedArray(PatchData,mask=mask)
-    
-    print len(PatchData)
-    
-    #for i,p in enumerate(PatchData[13]):
-    #    if p < 0.4:
-    #        print PatchData[1][i]
-        
-   
-    #np.ma.compress_rows(PatchData)
-    #np.ma.compress_rowcols()
-    """
-    
     return RawData,PatchData
 
 def SetUpPlot():
