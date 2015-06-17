@@ -94,7 +94,6 @@ def bin_data_log10(datax,datay,numbins,botedge=-99,topedge=-99):
     Martin Hurst, 2011
     
     """
-    
     tempx = np.log10(datax)
     
     if botedge == -99:
@@ -108,25 +107,33 @@ def bin_data_log10(datax,datay,numbins,botedge=-99,topedge=-99):
         
     bin_space = (topedge-botedge)/numbins
     
-    binedges = np.arange(botedge,topedge+bin_space,bin_space)
-    whichbin = np.ndarray( (len(tempx)) )
-
+    binedges = np.arange(botedge,topedge+bin_space,bin_space) #left edges
+    
+    #whichbin = np.ndarray( (len(tempx)) ) #array of size == to xdata - a placeholder to store each value's bin location    
+    #whichbin is initialized as zeros, so when the algorithm finds a masked value, it is rightly skipped
+    #but in skipping it the value is left as 0. so later on our member count for the first bin contains all of the
+    #masked values. Cant use empty as we wont know what garbage memory will be there, could == one of our bins, so need to use 
+    #array_like to give a placeholder value > than the no of bins
+    #I think this will need refactored.
+    
+    whichbin = np.empty(len(tempx))
+    whichbin.fill(numbins+1) #fill array with this value
+    
+    print whichbin
     for i in range(0,numbins):
         for j in range (0,len(tempx)):
             if (tempx[j] > binedges[i] and tempx[j] <= binedges[i+1]):
+                
                 whichbin[j] = i
-            elif (tempx[j] >= topedge): whichbin[j] = -99
-            
-    #print binedges[0], binedges[1]
-     
+            elif (tempx[j] >= topedge): 
+                whichbin[j] = -99
+                            
     binmeandatax = np.zeros(numbins)
     binstddatax = np.zeros(numbins)
     binmembercount = np.zeros(numbins)
     binmeandatay = np.zeros(numbins)
     binstddatay = np.zeros(numbins)
-
-    #print whichbin
-    
+   
     for i in range (0,numbins):
         flagbinmembers = (whichbin == i)
         binmemberdatax = tempx[flagbinmembers]
