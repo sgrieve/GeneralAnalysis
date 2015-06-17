@@ -84,8 +84,9 @@ def SetUpPlot():
     return ax    
 
 def PlotRaw(Sc,RawData):
-    plt.errorbar(E_Star(Sc,RawData[3],RawData[2]),R_Star(Sc,RawData[4],RawData[2]),
-    fmt='ro')
+    plt.scatter(E_Star(Sc,RawData[3],RawData[2]),R_Star(Sc,RawData[4],RawData[2]),
+    marker='.',s=0.5,alpha=0.2)
+    
 def PlotBins(Sc):
     pass
 
@@ -155,7 +156,8 @@ def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,BinFlag,PatchFlag,Format='png'):
     
     Sc = GetBestFitSc(Sc_Method, RawData, PatchData)
         
-    DrawCurve()
+   
+    DrawCurve()  
     
     if RawFlag:
         PlotRaw(Sc,RawData)
@@ -163,8 +165,7 @@ def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,BinFlag,PatchFlag,Format='png'):
         PlotBins(Sc)
     if PatchFlag:
         PlotPatches(Sc,PatchData)
-        
-        
+          
     Labels()
     
     SavePlot(Path,Prefix,Format)
