@@ -112,21 +112,6 @@ def DrawCurve():
     x = np.arange(0.01, 1000, 0.1)        
     plt.plot(x, R_Star_Model(x), 'k-', linewidth=2, label='Nonlinear Flux Law')
 
-"""    
-def Calculate_E_R_Star(lh,cht,r,Sc):
-    #will need to look at propagating errors
-    #this method will be used to get the E*R* values for
-    #whatever type of input data we have, either raw, binned or patches
-    #and in the case of patches and bins, it will also do somehting with the 
-    #std err or std dev values
-    #returns 2 numpy arrays of the E* and R* values
-    
-    E_Star = (2. * np.fabs(cht) * lh) / Sc
-    RStar = (r / lh) / Sc
-    
-    return E_Star, RStar
-"""
-
 def GetBestFitSc(Method, RawData, PatchData):
 
     ScInit = 0.8  # Need to have an initial for the optimizer, any valid Sc value can be used - will not impact the final value    
