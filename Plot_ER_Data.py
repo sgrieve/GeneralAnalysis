@@ -93,10 +93,7 @@ def PlotBins(Sc,RawData,NumBins):
     R_s = R_Star(Sc, RawData[4], RawData[2])
     
     bin_x, bin_std_x, bin_y, bin_std_y, _ = Bin.bin_data_log10(E_s,R_s,NumBins)
-    
-    #for q in zip(bin_x,_):
-        #print q[0],q[1]
-    
+        
     plt.errorbar(bin_x, bin_y, yerr=bin_std_y, xerr=bin_std_x, fmt='bo')    
     
 
