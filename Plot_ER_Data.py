@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 from matplotlib import rcParams
 import numpy as np
 import scipy.optimize as optimize
+import bin_data as Bin
 
 def LoadData(Path,Prefix):
 
@@ -38,7 +39,7 @@ def LoadData(Path,Prefix):
     RawMask = np.empty(RawData.shape,dtype=bool)
     RawMask[:,:] = (RawData[5,:] > 0.4)[np.newaxis,:]
     RawData = np.ma.MaskedArray(RawData,mask=RawMask)        
-                
+                                
     #Next, repeat the process for the patch data
     with open(Path+Prefix+'_E_R_Star_Patch_Data.csv','r') as patch:
         no_of_cols = len(patch.readline().split(','))
@@ -50,7 +51,7 @@ def LoadData(Path,Prefix):
 
     no_of_lines = len(patchdata)           
         
-    PatchData = np.zeros((no_of_cols,no_of_lines),dtype='float64')
+    PatchData = np.zeros((no_of_cols,no_of_lines),dtype='float64')    
     
     for i,p in enumerate(patchdata):
         split = p.split(',')
@@ -87,8 +88,17 @@ def PlotRaw(Sc,RawData):
     plt.scatter(E_Star(Sc,RawData[3],RawData[2]),R_Star(Sc,RawData[4],RawData[2]),
     marker='.',s=0.5,alpha=0.2)
     
-def PlotBins(Sc,RawData):
-    pass
+def PlotBins(Sc,RawData,NumBins):
+    E_s = E_Star(Sc, RawData[3], RawData[2])
+    R_s = R_Star(Sc, RawData[4], RawData[2])
+    
+    bin_x, bin_std_x, bin_y, bin_std_y, _ = Bin.bin_data_log10(E_s,R_s,NumBins)
+    
+    #for q in zip(bin_x,_):
+        #print q[0],q[1]
+    
+    plt.errorbar(bin_x, bin_y, yerr=bin_std_y, xerr=bin_std_x, fmt='bo')    
+    
 
 def PlotPatches(Sc,PatchData):
 
@@ -147,7 +157,7 @@ def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,BinFlag,PatchFlag,Format='png'):
     if RawFlag:
         PlotRaw(Sc,RawData)
     if BinFlag: 
-        PlotBins(Sc,RawData)
+        PlotBins(Sc,RawData,20)
     if PatchFlag:
         PlotPatches(Sc,PatchData)
           
@@ -156,7 +166,7 @@ def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,BinFlag,PatchFlag,Format='png'):
     SavePlot(Path,Prefix,Format)
     
 
-MakeThePlot('C:\\Users\\Stuart\\Desktop\\FR\\er_data\\','CR2_gn_s','raw',1,0,0,Format='png')
+MakeThePlot('C:\\Users\\Stuart\\Desktop\\FR\\er_data\\','CR2_gn_s','raw',1,1,0,Format='png')
 
 #MakeThePlot('','CR2_gn_s',0,0,1,Format='png')
 
