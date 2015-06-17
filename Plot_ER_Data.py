@@ -83,9 +83,9 @@ def SetUpPlot():
 
     return ax    
 
-def PlotRaw(Sc):
-    pass
-
+def PlotRaw(Sc,RawData):
+    plt.errorbar(E_Star(Sc,RawData[3],RawData[2]),R_Star(Sc,RawData[4],RawData[2]),
+    fmt='ro')
 def PlotBins(Sc):
     pass
 
@@ -131,10 +131,10 @@ def GetBestFitSc(Method, RawData, PatchData):
     ScInit = 0.8  # Need to have an initial for the optimizer, any valid Sc value can be used - will not impact the final value    
     Fit_Sc = [] #Need to initialize this in case Method is incorrectly defined. Need some error handling!
     
-    if Method.lower() == 'bins':
-        pass
-    elif Method.lower() == 'raw':
-        pass
+    if Method.lower() == 'raw':
+        
+        Fit_Sc,_,_,_,_ = optimize.leastsq(Residuals, ScInit, args=(RawData[4], RawData[2], RawData[3]),full_output=True)
+        
     elif Method.lower() == 'patches':
                 
         Fit_Sc,_,_,_,_ = optimize.leastsq(Residuals, ScInit, args=(PatchData[9], PatchData[1], PatchData[5]),full_output=True)
@@ -147,18 +147,18 @@ def Labels():
 def SavePlot(Path,Prefix,Format):
     plt.savefig(Path+Prefix+'E_R_Star.'+Format,dpi=500)
 
-def MakeThePlot(Path,Prefix,RawFlag,BinFlag,PatchFlag,Format='png'):
+def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,BinFlag,PatchFlag,Format='png'):
     
     RawData,PatchData = LoadData(Path,Prefix)
     
     ax = SetUpPlot()
     
-    Sc = GetBestFitSc('patches', RawData, PatchData)
-    
+    Sc = GetBestFitSc(Sc_Method, RawData, PatchData)
+        
     DrawCurve()
     
     if RawFlag:
-        PlotRaw(Sc)
+        PlotRaw(Sc,RawData)
     if BinFlag: 
         PlotBins(Sc)
     if PatchFlag:
@@ -170,7 +170,7 @@ def MakeThePlot(Path,Prefix,RawFlag,BinFlag,PatchFlag,Format='png'):
     SavePlot(Path,Prefix,Format)
     
 
-MakeThePlot('C:\\Users\\Stuart\\Desktop\\FR\\er_data\\','CR2_gn_s',0,0,1,Format='png')
+MakeThePlot('C:\\Users\\Stuart\\Desktop\\FR\\er_data\\','CR2_gn_s','raw',1,0,0,Format='png')
 
 #MakeThePlot('','CR2_gn_s',0,0,1,Format='png')
 
