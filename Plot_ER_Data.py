@@ -13,7 +13,7 @@ import bin_data as Bin
 
 def LoadData(Path,Prefix):
 
-    #load the data from the raw file  
+    #load the data from the raw file
     #not using genfromtext as I want access to individual elements
     #for debugging, may change in future
     with open(Path+Prefix+'_E_R_Star_Raw_Data.csv','r') as raw:
@@ -26,20 +26,20 @@ def LoadData(Path,Prefix):
     #i j LH CHT Relief Slope
 
     no_of_lines = len(rawdata)
-        
+
     RawData = np.zeros((no_of_cols,no_of_lines),dtype='float64')
-    
+
     for i,r in enumerate(rawdata):
         split = r.split(',')
-        for a in range(no_of_cols):    
-            RawData[a][i] = split[a]        
+        for a in range(no_of_cols):
+            RawData[a][i] = split[a]
     #now we have a transformed 2d array of our raw data
-    
-    # Mask out the rows where the mean slope is > 0.4                  
+
+    # Mask out the rows where the mean slope is > 0.4
     RawMask = np.empty(RawData.shape,dtype=bool)
     RawMask[:,:] = (RawData[5,:] > 0.4)[np.newaxis,:]
-    RawData = np.ma.MaskedArray(RawData,mask=RawMask)        
-                                
+    RawData = np.ma.MaskedArray(RawData,mask=RawMask)
+
     #Next, repeat the process for the patch data
     with open(Path+Prefix+'_E_R_Star_Patch_Data.csv','r') as patch:
         no_of_cols = len(patch.readline().split(','))
@@ -49,20 +49,20 @@ def LoadData(Path,Prefix):
     #and the row order will follow the header format in the input file:
     #Final_ID lh_means lh_medians lh_std_devs lh_std_errs cht_means cht_medians cht_std_devs cht_std_errs r_means r_medians r_std_devs r_std_errs s_means s_medians s_std_devs s_std_errs
 
-    no_of_lines = len(patchdata)           
-        
-    PatchData = np.zeros((no_of_cols,no_of_lines),dtype='float64')    
-    
+    no_of_lines = len(patchdata)
+
+    PatchData = np.zeros((no_of_cols,no_of_lines),dtype='float64')
+
     for i,p in enumerate(patchdata):
         split = p.split(',')
         for a in range(no_of_cols):
-            PatchData[a][i] = split[a]    
-                
-    # Mask out the rows where the mean slope is > 0.4                  
+            PatchData[a][i] = split[a]
+
+    # Mask out the rows where the mean slope is > 0.4
     PatchMask = np.empty(PatchData.shape,dtype=bool)
     PatchMask[:,:] = (PatchData[13,:] > 0.4)[np.newaxis,:]
-    PatchData = np.ma.MaskedArray(PatchData,mask=PatchMask)        
-    
+    PatchData = np.ma.MaskedArray(PatchData,mask=PatchMask)
+
     return RawData,PatchData
 
 def SetUpPlot():
@@ -70,98 +70,97 @@ def SetUpPlot():
     rcParams['font.family'] = 'sans-serif'
     rcParams['font.sans-serif'] = ['arial']
     rcParams['font.size'] = 14
-    
-    ax = plt.gca()    
-    
+
+    ax = plt.gca()
+
     ax.set_yscale('log')
     ax.set_xscale('log')
 
     plt.xlabel('Dimensionless Erosion Rate, E*')
     plt.ylabel('Dimensionless Relief, R*')
-    
+
     plt.ylim(0.1,1)
     plt.xlim(0.1,1000)
 
-    return ax    
+    return ax
 
 def PlotRaw(Sc,RawData):
     plt.scatter(E_Star(Sc,RawData[3],RawData[2]),R_Star(Sc,RawData[4],RawData[2]),
     marker='.',s=0.5,alpha=0.2)
-    
+
 def PlotBins(Sc,RawData,NumBins):
     E_s = E_Star(Sc, RawData[3], RawData[2])
     R_s = R_Star(Sc, RawData[4], RawData[2])
-    
-    bin_x, bin_std_x, bin_y, bin_std_y, _ = Bin.bin_data_log10(E_s,R_s,NumBins)
-        
-    plt.errorbar(bin_x, bin_y, yerr=bin_std_y, xerr=bin_std_x, fmt='bo')    
-    
 
+    bin_x, bin_std_x, bin_y, bin_std_y, _ = Bin.bin_data_log10(E_s,R_s,NumBins)
+
+    plt.errorbar(bin_x, bin_y, yerr=bin_std_y, xerr=bin_std_x, fmt='bo')
+    
 def PlotPatches(Sc,PatchData):
 
     plt.errorbar(E_Star(Sc,PatchData[5],PatchData[1]),R_Star(Sc,PatchData[9],PatchData[1]),
-    fmt='ro')    
+    fmt='ro')
 
 def R_Star_Model(x):
     return (1./x) * (np.sqrt(1.+(x*x)) - np.log(0.5*(1. + np.sqrt(1.+(x*x)))) - 1.)
-    
+
 def E_Star(Sc,CHT,LH):
     return (2.*np.fabs(CHT)*LH)/Sc
-    
+
 def R_Star(Sc, R, LH):
     return R/(LH*Sc)
-    
+
 def Residuals(Sc, R, LH, CHT):
     return R_Star_Model(E_Star(Sc,CHT,LH)) - R_Star(Sc, R, LH)
 
-def DrawCurve():    
+def DrawCurve():
     #plot the e* r* curve from roering 2007
-    x = np.arange(0.01, 1000, 0.1)        
+    x = np.arange(0.01, 1000, 0.1)
     plt.plot(x, R_Star_Model(x), 'k-', linewidth=2, label='Nonlinear Flux Law')
 
 def GetBestFitSc(Method, RawData, PatchData):
 
-    ScInit = 0.8  # Need to have an initial for the optimizer, any valid Sc value can be used - will not impact the final value    
+    ScInit = 0.8  # Need to have an initial for the optimizer, any valid Sc value can be used - will not impact the final value
     Fit_Sc = [] #Need to initialize this in case Method is incorrectly defined. Need some error handling!
-    
+
     if Method.lower() == 'raw':
-        
+
         Fit_Sc,_,_,_,_ = optimize.leastsq(Residuals, ScInit, args=(RawData[4], RawData[2], RawData[3]),full_output=True)
-        
+
     elif Method.lower() == 'patches':
-                
+
         Fit_Sc,_,_,_,_ = optimize.leastsq(Residuals, ScInit, args=(PatchData[9], PatchData[1], PatchData[5]),full_output=True)
-       
-    return Fit_Sc[0]    
+
+    return Fit_Sc[0]
 
 def Labels():
     plt.legend(loc=4)
-    
+
 def SavePlot(Path,Prefix,Format):
     plt.savefig(Path+Prefix+'E_R_Star.'+Format,dpi=500)
 
 def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,BinFlag,PatchFlag,Format='png'):
-    
+
     RawData,PatchData = LoadData(Path,Prefix)
-    
+
     ax = SetUpPlot()
-    
+
     Sc = GetBestFitSc(Sc_Method, RawData, PatchData)
-        
-   
-    DrawCurve()  
-    
+
+
+    DrawCurve()
+
     if RawFlag:
         PlotRaw(Sc,RawData)
-    if BinFlag: 
+    if BinFlag:
         PlotBins(Sc,RawData,20)
     if PatchFlag:
         PlotPatches(Sc,PatchData)
-          
+
     Labels()
-    
+
     SavePlot(Path,Prefix,Format)
-    
+
 
 MakeThePlot('C:\\Users\\Stuart\\Desktop\\FR\\er_data\\','CR2_gn_s','raw',1,1,0,Format='png')
 
@@ -170,5 +169,3 @@ MakeThePlot('C:\\Users\\Stuart\\Desktop\\FR\\er_data\\','CR2_gn_s','raw',1,1,0,F
 #RawData,PatchData = LoadData('C:\\Users\\Stuart\\Desktop\\FR\\er_data\\','CR2_gn_s')
 
 #print GetBestFitSc('patches', RawData, PatchData)
-
-        
