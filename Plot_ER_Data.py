@@ -11,7 +11,7 @@ import numpy as np
 import scipy.optimize as optimize
 import bin_data as Bin
 
-def LoadData(Path,Prefix):
+def LoadData(Path,Prefix,Order):
 
     #load the data from the raw file
     #not using genfromtext as I want access to individual elements
@@ -45,7 +45,7 @@ def LoadData(Path,Prefix):
         no_of_cols = len(patch.readline().split(','))
         patchdata = patch.readlines()
 
-    #dimensions will be 17Xlen(rawdata) no_of_cols = 17
+    #dimensions will be 17Xlen(patchdata) no_of_cols = 17
     #and the row order will follow the header format in the input file:
     #Final_ID lh_means lh_medians lh_std_devs lh_std_errs cht_means cht_medians cht_std_devs cht_std_errs r_means r_medians r_std_devs r_std_errs s_means s_medians s_std_devs s_std_errs
 
@@ -63,7 +63,30 @@ def LoadData(Path,Prefix):
     PatchMask[:,:] = (PatchData[13,:] > 0.4)[np.newaxis,:]
     PatchData = np.ma.MaskedArray(PatchData,mask=PatchMask)
 
-    return RawData,PatchData
+    #Next, repeat the process for the Basin data
+    with open(Path+Prefix+'_E_R_Star_Basin_'+str(Order)+'_Data.csv','r') as basin:
+        no_of_cols = len(basin.readline().split(','))
+        basindata = basin.readlines()
+
+    #dimensions will be 7Xlen(basindata) no_of_cols = 7
+    #and the row order will follow the header format in the input file:
+    #Basin_ID LH CHT Relief Slope Area Count
+
+    no_of_lines = len(basindata)
+
+    BasinData = np.zeros((no_of_cols,no_of_lines),dtype='float64')
+
+    for i,d in enumerate(basindata):
+        split = d.split(',')
+        for a in range(no_of_cols):
+            PatchData[a][i] = split[a]
+
+    # Mask out the rows where the mean slope is > 0.4
+    BasinMask = np.empty(BasinData.shape,dtype=bool)
+    BasinMask[:,:] = (BasinData[13,:] > 0.4)[np.newaxis,:]
+    BasinData = np.ma.MaskedArray(BasinData,mask=BasinMask)
+
+    return RawData,PatchData,BasinData
 
 def SetUpPlot():
     #returning ax for now, may not need to expose it like this.
@@ -95,7 +118,7 @@ def PlotBins(Sc,RawData,NumBins):
     bin_x, bin_std_x, bin_y, bin_std_y, _ = Bin.bin_data_log10(E_s,R_s,NumBins)
 
     plt.errorbar(bin_x, bin_y, yerr=bin_std_y, xerr=bin_std_x, fmt='bo')
-    
+
 def PlotPatches(Sc,PatchData):
 
     plt.errorbar(E_Star(Sc,PatchData[5],PatchData[1]),R_Star(Sc,PatchData[9],PatchData[1]),
@@ -139,9 +162,9 @@ def Labels():
 def SavePlot(Path,Prefix,Format):
     plt.savefig(Path+Prefix+'E_R_Star.'+Format,dpi=500)
 
-def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,BinFlag,PatchFlag,Format='png'):
+def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,BinFlag,PatchFlag,Order,Format='png'):
 
-    RawData,PatchData = LoadData(Path,Prefix)
+    RawData,PatchData,BasinData = LoadData(Path,Prefix,Order)
 
     ax = SetUpPlot()
 
@@ -162,7 +185,7 @@ def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,BinFlag,PatchFlag,Format='png'):
     SavePlot(Path,Prefix,Format)
 
 
-MakeThePlot('C:\\Users\\Stuart\\Desktop\\FR\\er_data\\','CR2_gn_s','raw',1,1,0,Format='png')
+MakeThePlot('C:\\Users\\Stuart\\Desktop\\FR\\er_data\\','CR2_gn_s','raw',1,1,0,2,Format='png')
 
 #MakeThePlot('','CR2_gn_s',0,0,1,Format='png')
 
