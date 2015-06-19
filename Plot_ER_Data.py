@@ -127,6 +127,17 @@ def PlotBasins(Sc,BasinData):
     plt.errorbar(E_Star(Sc,BasinData[2],BasinData[1]),R_Star(Sc,BasinData[3],BasinData[1]),
     fmt='go',label='Basin Data')
 
+def PlotLandscapeAverage(Sc,RawData):
+    E_Star_temp = E_Star(Sc,RawData[3],RawData[2])
+    R_Star_temp = R_Star(Sc,RawData[4],RawData[2])
+    E_Star_avg = np.mean(E_Star_temp)
+    R_Star_avg = np.mean(R_Star_temp)
+    E_Star_std = np.std(E_Star_temp)
+    R_Star_std = np.std(R_Star_temp)
+
+    plt.errorbar(E_Star_avg,R_Star_avg,yerr=R_Star_std,xerr=E_Star_std
+    fmt='ko',label='Landscape Average')
+
 def R_Star_Model(x):
     return (1./x) * (np.sqrt(1.+(x*x)) - np.log(0.5*(1. + np.sqrt(1.+(x*x)))) - 1.)
 
@@ -169,7 +180,7 @@ def Labels():
 def SavePlot(Path,Prefix,Format):
     plt.savefig(Path+Prefix+'E_R_Star.'+Format,dpi=500)
 
-def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,BinFlag,PatchFlag,BasinFlag,Order,Format='png'):
+def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,BinFlag,PatchFlag,BasinFlag,LandscapeFlag,Order,Format='png'):
 
     RawData,PatchData,BasinData = LoadData(Path,Prefix,Order)
 
@@ -188,13 +199,15 @@ def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,BinFlag,PatchFlag,BasinFlag,Order,
         PlotPatches(Sc,PatchData)
     if BasinFlag:
         PlotBasins(Sc,BasinData)
+    if LandscapeFlag:
+        PlotLandscapeAverage(Sc,RawData)
 
     Labels()
 
     SavePlot(Path,Prefix,Format)
 
 
-MakeThePlot('C:\\Users\\Stuart\\Desktop\\FR\\er_data\\','CR2_gn_s','raw',1,1,0,0,2,Format='png')
+MakeThePlot('C:\\Users\\Stuart\\Desktop\\FR\\er_data\\','CR2_gn_s','raw',1,1,0,0,0,2,Format='png')
 
 #MakeThePlot('','CR2_gn_s',0,0,1,Format='png')
 
