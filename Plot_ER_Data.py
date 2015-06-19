@@ -109,7 +109,7 @@ def SetUpPlot():
 
 def PlotRaw(Sc,RawData):
     plt.scatter(E_Star(Sc,RawData[3],RawData[2]),R_Star(Sc,RawData[4],RawData[2]),
-    marker='.',s=0.5,alpha=0.2)
+    marker='.',s=0.5,alpha=0.2,label='Raw Data')
 
 def PlotBins(Sc,RawData,NumBins):
     E_s = E_Star(Sc, RawData[3], RawData[2])
@@ -117,12 +117,12 @@ def PlotBins(Sc,RawData,NumBins):
 
     bin_x, bin_std_x, bin_y, bin_std_y, _ = Bin.bin_data_log10(E_s,R_s,NumBins)
 
-    plt.errorbar(bin_x, bin_y, yerr=bin_std_y, xerr=bin_std_x, fmt='bo')
+    plt.errorbar(bin_x, bin_y, yerr=bin_std_y, xerr=bin_std_x, fmt='bo',label='Binned Data')
 
 def PlotPatches(Sc,PatchData):
 
     plt.errorbar(E_Star(Sc,PatchData[5],PatchData[1]),R_Star(Sc,PatchData[9],PatchData[1]),
-    fmt='ro')
+    fmt='ro',label='Hilltop Patch Data')
 
 def R_Star_Model(x):
     return (1./x) * (np.sqrt(1.+(x*x)) - np.log(0.5*(1. + np.sqrt(1.+(x*x)))) - 1.)
