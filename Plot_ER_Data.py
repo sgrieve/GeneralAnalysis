@@ -83,7 +83,7 @@ def LoadData(Path,Prefix,Order):
 
     # Mask out the rows where the mean slope is > 0.4
     BasinMask = np.empty(BasinData.shape,dtype=bool)
-    BasinMask[:,:] = (BasinData[13,:] > 0.4)[np.newaxis,:]
+    BasinMask[:,:] = (BasinData[4,:] > 0.4)[np.newaxis,:]
     BasinData = np.ma.MaskedArray(BasinData,mask=BasinMask)
 
     return RawData,PatchData,BasinData
