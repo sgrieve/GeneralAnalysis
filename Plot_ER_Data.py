@@ -79,12 +79,14 @@ def LoadData(Path,Prefix,Order):
     for i,d in enumerate(basindata):
         split = d.split(',')
         for a in range(no_of_cols):
-            PatchData[a][i] = split[a]
+            BasinData[a][i] = split[a]
 
     # Mask out the rows where the mean slope is > 0.4
     BasinMask = np.empty(BasinData.shape,dtype=bool)
     BasinMask[:,:] = (BasinData[4,:] > 0.4)[np.newaxis,:]
     BasinData = np.ma.MaskedArray(BasinData,mask=BasinMask)
+
+    print BasinData
 
     return RawData,PatchData,BasinData
 
@@ -135,7 +137,7 @@ def PlotLandscapeAverage(Sc,RawData):
     E_Star_std = np.std(E_Star_temp)
     R_Star_std = np.std(R_Star_temp)
 
-    plt.errorbar(E_Star_avg,R_Star_avg,yerr=R_Star_std,xerr=E_Star_std
+    plt.errorbar(E_Star_avg,R_Star_avg,yerr=R_Star_std,xerr=E_Star_std,
     fmt='ko',label='Landscape Average')
 
 def R_Star_Model(x):
@@ -186,7 +188,7 @@ def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,BinFlag,PatchFlag,BasinFlag,Landsc
 
     ax = SetUpPlot()
 
-    Sc = GetBestFitSc(Sc_Method, RawData, PatchData)
+    Sc = GetBestFitSc(Sc_Method, RawData, PatchData, BasinData)
 
 
     DrawCurve()
@@ -207,7 +209,7 @@ def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,BinFlag,PatchFlag,BasinFlag,Landsc
     SavePlot(Path,Prefix,Format)
 
 
-MakeThePlot('C:\\Users\\Stuart\\Desktop\\FR\\er_data\\','CR2_gn_s','raw',1,1,0,0,0,2,Format='png')
+MakeThePlot('C:\\Users\\Stuart\\Desktop\\FR\\er_data\\','GM','basin',0,0,0,1,1,2,Format='png')
 
 #MakeThePlot('','CR2_gn_s',0,0,1,Format='png')
 
