@@ -120,9 +120,12 @@ def PlotBins(Sc,RawData,NumBins):
     plt.errorbar(bin_x, bin_y, yerr=bin_std_y, xerr=bin_std_x, fmt='bo',label='Binned Data')
 
 def PlotPatches(Sc,PatchData):
-
     plt.errorbar(E_Star(Sc,PatchData[5],PatchData[1]),R_Star(Sc,PatchData[9],PatchData[1]),
     fmt='ro',label='Hilltop Patch Data')
+
+def PlotBasins(Sc,BasinData):
+    plt.errorbar(E_Star(Sc,BasinData[2],BasinData[1]),R_Star(Sc,BasinData[3],BasinData[1]),
+    fmt='go',label='Basin Data')
 
 def R_Star_Model(x):
     return (1./x) * (np.sqrt(1.+(x*x)) - np.log(0.5*(1. + np.sqrt(1.+(x*x)))) - 1.)
@@ -162,7 +165,7 @@ def Labels():
 def SavePlot(Path,Prefix,Format):
     plt.savefig(Path+Prefix+'E_R_Star.'+Format,dpi=500)
 
-def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,BinFlag,PatchFlag,Order,Format='png'):
+def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,BinFlag,PatchFlag,BasinFlag,Order,Format='png'):
 
     RawData,PatchData,BasinData = LoadData(Path,Prefix,Order)
 
@@ -179,13 +182,15 @@ def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,BinFlag,PatchFlag,Order,Format='pn
         PlotBins(Sc,RawData,20)
     if PatchFlag:
         PlotPatches(Sc,PatchData)
+    if BasinFlag:
+        PlotBasins(Sc,BasinData)
 
     Labels()
 
     SavePlot(Path,Prefix,Format)
 
 
-MakeThePlot('C:\\Users\\Stuart\\Desktop\\FR\\er_data\\','CR2_gn_s','raw',1,1,0,2,Format='png')
+MakeThePlot('C:\\Users\\Stuart\\Desktop\\FR\\er_data\\','CR2_gn_s','raw',1,1,0,0,2,Format='png')
 
 #MakeThePlot('','CR2_gn_s',0,0,1,Format='png')
 
