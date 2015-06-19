@@ -111,14 +111,20 @@ def PlotRaw(Sc,RawData):
     plt.scatter(E_Star(Sc,RawData[3],RawData[2]),R_Star(Sc,RawData[4],RawData[2]),
     marker='.',s=0.5,alpha=0.2,label='Raw Data')
 
-def PlotBins(Sc,RawData,NumBins):
+def PlotBins(Sc,RawData,NumBins,MinimumBinSize=100):
     E_s = E_Star(Sc, RawData[3], RawData[2])
     R_s = R_Star(Sc, RawData[4], RawData[2])
 
-    bin_x, bin_std_x, bin_y, bin_std_y, _ = Bin.bin_data_log10(E_s,R_s,NumBins)
-
-    plt.errorbar(bin_x, bin_y, yerr=bin_std_y, xerr=bin_std_x, fmt='bo',label='Binned Data')
-
+    bin_x, bin_std_x, bin_y, bin_std_y, count = Bin.bin_data_log10(E_s,R_s,NumBins)
+    
+    #filter bins based on the number of data points used in their calculation
+    bin_x = np.ma.masked_where(count>MinimumBinSize, bin_x)    
+    bin_y = np.ma.masked_where(count>MinimumBinSize, bin_y)
+    #these lines produce a meaningless warning - don't know how to solve it yet.
+    
+    #only plot errorbars for y as std dev of x is just the bin width ==  meaningless
+    plt.errorbar(bin_x, bin_y, yerr=bin_std_y, fmt='bo',label='Binned Data')
+    
 def PlotPatches(Sc,PatchData):
     plt.errorbar(E_Star(Sc,PatchData[5],PatchData[1]),R_Star(Sc,PatchData[9],PatchData[1]),
     fmt='ro',label='Hilltop Patch Data')
@@ -188,9 +194,6 @@ def Labels(Sc,Method):
 
     elif Method.lower() == 'basins':
         fit_description = ' from basin average data = '
-
-    plt.annotate('Best fit $\mathregular{S_c}$'+fit_description+str(round(Sc,2)), xy=(0.025, 0.90), xycoords='axes fraction',
-    horizontalalignment='left', verticalalignment='bottom')  
     
     plt.title('Best fit $\mathregular{S_c}$'+fit_description+str(round(Sc,2)))
 
