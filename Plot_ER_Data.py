@@ -144,7 +144,7 @@ def DrawCurve():
     x = np.arange(0.01, 1000, 0.1)
     plt.plot(x, R_Star_Model(x), 'k-', linewidth=2, label='Nonlinear Flux Law')
 
-def GetBestFitSc(Method, RawData, PatchData):
+def GetBestFitSc(Method, RawData, PatchData, BasinData):
 
     ScInit = 0.8  # Need to have an initial for the optimizer, any valid Sc value can be used - will not impact the final value
     Fit_Sc = [] #Need to initialize this in case Method is incorrectly defined. Need some error handling!
@@ -156,6 +156,10 @@ def GetBestFitSc(Method, RawData, PatchData):
     elif Method.lower() == 'patches':
 
         Fit_Sc,_,_,_,_ = optimize.leastsq(Residuals, ScInit, args=(PatchData[9], PatchData[1], PatchData[5]),full_output=True)
+
+    elif Method.lower() == 'basins':
+
+        Fit_Sc,_,_,_,_ = optimize.leastsq(Residuals, ScInit, args=(BasinData[3], BasinData[1], BasinData[2]),full_output=True)
 
     return Fit_Sc[0]
 
