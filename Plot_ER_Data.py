@@ -96,14 +96,14 @@ def SetUpPlot():
 
     ax = plt.gca()
 
-    ax.set_yscale('log')
-    ax.set_xscale('log')
+    ax.set_yscale('log', nonposy='clip')
+    ax.set_xscale('log', nonposx='clip')
 
     plt.xlabel('Dimensionless Erosion Rate, E*')
     plt.ylabel('Dimensionless Relief, R*')
 
-    #plt.ylim(0.1,1)
-    #plt.xlim(0.1,1000)
+    plt.ylim(0.1,1)
+    plt.xlim(0.1,1000)
 
     return ax
 
@@ -189,8 +189,10 @@ def Labels(Sc,Method):
     elif Method.lower() == 'basins':
         fit_description = ' from basin average data = '
 
-    plt.annotate('Best fit $\mathregular{S_c}$'+fit_description+str(round(Sc,2)), xy=(0.05, 0.9), xycoords='axes fraction',
-    horizontalalignment='left', verticalalignment='bottom')    
+    plt.annotate('Best fit $\mathregular{S_c}$'+fit_description+str(round(Sc,2)), xy=(0.025, 0.90), xycoords='axes fraction',
+    horizontalalignment='left', verticalalignment='bottom')  
+    
+    plt.title('Best fit $\mathregular{S_c}$'+fit_description+str(round(Sc,2)))
 
 def SavePlot(Path,Prefix,Format):
     plt.savefig(Path+Prefix+'_E_R_Star.'+Format,dpi=500)
@@ -202,7 +204,6 @@ def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,BinFlag,PatchFlag,BasinFlag,Landsc
     ax = SetUpPlot()
 
     Sc = GetBestFitSc(Sc_Method, RawData, PatchData, BasinData)
-
 
     DrawCurve()
 
@@ -222,7 +223,7 @@ def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,BinFlag,PatchFlag,BasinFlag,Landsc
     SavePlot(Path,Prefix,Format)
 
 
-MakeThePlot('','CR2_gn_s','patches',0,0,1,0,1,2,Format='png')
+MakeThePlot('','CR2_gn_s','raw',0,1,0,0,0,2,Format='png')
 
 #MakeThePlot('','CR2_gn_s',0,0,1,Format='png')
 
