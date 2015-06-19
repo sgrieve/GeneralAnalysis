@@ -86,8 +86,6 @@ def LoadData(Path,Prefix,Order):
     BasinMask[:,:] = (BasinData[4,:] > 0.4)[np.newaxis,:]
     BasinData = np.ma.MaskedArray(BasinData,mask=BasinMask)
 
-    print BasinData
-
     return RawData,PatchData,BasinData
 
 def SetUpPlot():
@@ -104,8 +102,8 @@ def SetUpPlot():
     plt.xlabel('Dimensionless Erosion Rate, E*')
     plt.ylabel('Dimensionless Relief, R*')
 
-    plt.ylim(0.1,1)
-    plt.xlim(0.1,1000)
+    #plt.ylim(0.1,1)
+    #plt.xlim(0.1,1000)
 
     return ax
 
@@ -176,11 +174,26 @@ def GetBestFitSc(Method, RawData, PatchData, BasinData):
 
     return Fit_Sc[0]
 
-def Labels():
+def Labels(Sc,Method):
     plt.legend(loc=4)
 
+    #in case Method is invalid    
+    fit_description = ' = '
+    
+    if Method.lower() == 'raw':
+        fit_description = ' from raw data = '
+
+    elif Method.lower() == 'patches':
+        fit_description = ' from hilltop patches = '
+
+    elif Method.lower() == 'basins':
+        fit_description = ' from basin average data = '
+
+    plt.annotate('Best fit $\mathregular{S_c}$'+fit_description+str(round(Sc,2)), xy=(0.05, 0.9), xycoords='axes fraction',
+    horizontalalignment='left', verticalalignment='bottom')    
+
 def SavePlot(Path,Prefix,Format):
-    plt.savefig(Path+Prefix+'E_R_Star.'+Format,dpi=500)
+    plt.savefig(Path+Prefix+'_E_R_Star.'+Format,dpi=500)
 
 def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,BinFlag,PatchFlag,BasinFlag,LandscapeFlag,Order,Format='png'):
 
@@ -204,12 +217,12 @@ def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,BinFlag,PatchFlag,BasinFlag,Landsc
     if LandscapeFlag:
         PlotLandscapeAverage(Sc,RawData)
 
-    Labels()
+    Labels(Sc,Sc_Method)
 
     SavePlot(Path,Prefix,Format)
 
 
-MakeThePlot('C:\\Users\\Stuart\\Desktop\\FR\\er_data\\','GM','basin',0,0,0,1,1,2,Format='png')
+MakeThePlot('','CR2_gn_s','patches',0,0,1,0,1,2,Format='png')
 
 #MakeThePlot('','CR2_gn_s',0,0,1,Format='png')
 
