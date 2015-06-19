@@ -119,7 +119,6 @@ def bin_data_log10(datax,datay,numbins,botedge=-99,topedge=-99):
     whichbin = np.empty(len(tempx))
     whichbin.fill(numbins+1) #fill array with this value
     
-    print whichbin
     for i in range(0,numbins):
         for j in range (0,len(tempx)):
             if (tempx[j] > binedges[i] and tempx[j] <= binedges[i+1]):
