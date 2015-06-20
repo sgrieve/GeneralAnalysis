@@ -116,15 +116,15 @@ def PlotBins(Sc,RawData,NumBins,MinimumBinSize=100):
     R_s = R_Star(Sc, RawData[4], RawData[2])
 
     bin_x, bin_std_x, bin_y, bin_std_y, count = Bin.bin_data_log10(E_s,R_s,NumBins)
-    
+
     #filter bins based on the number of data points used in their calculation
-    bin_x = np.ma.masked_where(count>MinimumBinSize, bin_x)    
+    bin_x = np.ma.masked_where(count>MinimumBinSize, bin_x)
     bin_y = np.ma.masked_where(count>MinimumBinSize, bin_y)
     #these lines produce a meaningless warning - don't know how to solve it yet.
-    
+
     #only plot errorbars for y as std dev of x is just the bin width ==  meaningless
     plt.errorbar(bin_x, bin_y, yerr=bin_std_y, fmt='bo',label='Binned Data')
-    
+
 def PlotPatches(Sc,PatchData):
     plt.errorbar(E_Star(Sc,PatchData[5],PatchData[1]),R_Star(Sc,PatchData[9],PatchData[1]),
     fmt='ro',label='Hilltop Patch Data')
@@ -183,9 +183,9 @@ def GetBestFitSc(Method, RawData, PatchData, BasinData):
 def Labels(Sc,Method):
     plt.legend(loc=4)
 
-    #in case Method is invalid    
+    #in case Method is invalid
     fit_description = ' = '
-    
+
     if Method.lower() == 'raw':
         fit_description = ' from raw data = '
 
@@ -194,7 +194,7 @@ def Labels(Sc,Method):
 
     elif Method.lower() == 'basins':
         fit_description = ' from basin average data = '
-    
+
     plt.title('Best fit $\mathregular{S_c}$'+fit_description+str(round(Sc,2)))
 
 def SavePlot(Path,Prefix,Format):
@@ -213,7 +213,7 @@ def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,BinFlag,PatchFlag,BasinFlag,Landsc
     if RawFlag:
         PlotRaw(Sc,RawData)
     if BinFlag:
-        PlotBins(Sc,RawData,20)
+        PlotBins(Sc,RawData,BinFlag)
     if PatchFlag:
         PlotPatches(Sc,PatchData)
     if BasinFlag:
@@ -226,7 +226,7 @@ def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,BinFlag,PatchFlag,BasinFlag,Landsc
     SavePlot(Path,Prefix,Format)
 
 
-MakeThePlot('','CR2_gn_s','raw',0,1,0,0,0,2,Format='png')
+MakeThePlot('','CR2_gn_s','raw',0,20,0,0,0,2,Format='png')
 
 #MakeThePlot('','CR2_gn_s',0,0,1,Format='png')
 
