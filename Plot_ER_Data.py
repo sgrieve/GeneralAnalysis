@@ -226,9 +226,12 @@ def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,BinFlag,PatchFlag,BasinFlag,Landsc
     SavePlot(Path,Prefix,Format)
 
 
-MakeThePlot('','CR2_gn_s','raw',0,20,0,0,0,2,Format='png')
+MakeThePlot('C:\\Users\\Stuart\\Desktop\\FR\\er_data\\','CR2_gn_s','raw',1,0,1,0,1,2,Format='png')
+
+
 
 #MakeThePlot('','CR2_gn_s',0,0,1,Format='png')
+
 
 #RawData,PatchData = LoadData('C:\\Users\\Stuart\\Desktop\\FR\\er_data\\','CR2_gn_s')
 
