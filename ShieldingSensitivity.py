@@ -143,7 +143,7 @@ def ks_testing():
     
     for a in zip(filelist_sorted,theta_sorted,phi_sorted):
         tmpArray = np.genfromtxt(a[0])
-        ks,p = stats.ks_2samp(OneOne, tmpArray)
+        ks,p = stats.chisquare(tmpArray,OneOne)
         print '('+str(a[1])+', '+str(a[2])+')',ks,p
         
         
