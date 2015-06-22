@@ -19,7 +19,8 @@ def hold_phi():
     path = 'C:\\Users\\Stuart\\Desktop\\FR\\cosmo\\'
     
     phi_list = [1, 2, 3, 5, 8, 10, 15, 20, 30, 45, 60, 90]
-    file_prefix = 'z33_26586_'
+    #file_prefix = 'z33_26586_'
+    file_prefix = 'z33_17218_'
     
     for p in phi_list:
         print 'processing phi: ',p
@@ -66,7 +67,8 @@ def hold_theta():
     path = 'C:\\Users\\Stuart\\Desktop\\FR\\cosmo\\'
     
     theta_list = [1, 2, 3, 5, 8, 10, 15, 20, 30, 45, 60, 90, 180, 360]
-    file_prefix = 'z33_26586_'
+    #file_prefix = 'z33_26586_'
+    file_prefix = 'z33_17218_'
     
     for t in theta_list:
         print 'processing theta: ',t
@@ -108,4 +110,43 @@ def hold_theta():
         plt.savefig('Theta_Azimuth_'+Labels[1].split(',')[0].strip('(')+'.png')
         plt.clf()
         
-hold_theta()
+def ks_testing():
+    
+    from scipy import stats
+    
+    path = 'C:\\Users\\Stuart\\Desktop\\FR\\cosmo\\'
+    
+    
+    #file_prefix = 'z33_26586_'
+    file_prefix = 'z33_17218_'
+    
+
+    OneOne = np.genfromtxt(path+file_prefix+'1_1_shield.txt')
+
+    filelist = []
+    theta = []
+    phi = []
+    
+    for f in glob.glob(path+file_prefix+'*.txt'):
+        filelist.append(f)
+        theta.append(int(f.split('_')[2]))
+        phi.append(int(f.split('_')[3]))
+        
+                
+        
+    #sort the data by theta so it is plotted in the correct order
+    sorted_data =  sorted(zip(phi,theta,filelist))
+    theta_sorted = [x[1] for x in sorted_data]
+    filelist_sorted = [x[2] for x in sorted_data]   
+    phi_sorted = [x[0] for x in sorted_data]
+ 
+    
+    for a in zip(filelist_sorted,theta_sorted,phi_sorted):
+        tmpArray = np.genfromtxt(a[0])
+        ks,p = stats.ks_2samp(OneOne, tmpArray)
+        print '('+str(a[1])+', '+str(a[2])+')',ks,p
+        
+        
+        
+ks_testing()            
+            
