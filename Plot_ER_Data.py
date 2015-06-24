@@ -118,8 +118,8 @@ def PlotBins(Sc,RawData,NumBins,MinimumBinSize=100):
     bin_x, bin_std_x, bin_y, bin_std_y, count = Bin.bin_data_log10(E_s,R_s,NumBins)
 
     #filter bins based on the number of data points used in their calculation
-    bin_x = np.ma.masked_where(count>MinimumBinSize, bin_x)
-    bin_y = np.ma.masked_where(count>MinimumBinSize, bin_y)
+    bin_x = np.ma.masked_where(count<MinimumBinSize, bin_x)
+    bin_y = np.ma.masked_where(count<MinimumBinSize, bin_y)
     #these lines produce a meaningless warning - don't know how to solve it yet.
 
     #only plot errorbars for y as std dev of x is just the bin width ==  meaningless
@@ -226,7 +226,7 @@ def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,BinFlag,PatchFlag,BasinFlag,Landsc
     SavePlot(Path,Prefix,Format)
 
 
-MakeThePlot('C:\\Users\\Stuart\\Desktop\\FR\\er_data\\','CR2_gn_s','raw',1,0,1,0,1,2,Format='png')
+MakeThePlot('C:\\Users\\Stuart\\Desktop\\FR\\er_data\\','CR2_gn_s','patches',1,20,0,0,0,2,Format='png')
 
 
 
