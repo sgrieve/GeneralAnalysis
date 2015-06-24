@@ -148,5 +148,53 @@ def ks_testing():
         
         
         
-ks_testing()            
-            
+#ks_testing()      
+
+def resid_comparison():
+    
+    from scipy import stats
+    
+    path = 'C:\\Users\\Stuart\\Desktop\\FR\\cosmo\\'
+    
+    
+    #file_prefix = 'z33_26586_' #high relief
+    file_prefix = 'z33_17218_' #low relief
+    
+    OneOne = np.genfromtxt(path+file_prefix+'1_1_shield.txt')
+
+    filelist = []
+    theta = []
+    phi = []
+    
+    for f in glob.glob(path+file_prefix+'*.txt'):
+        filelist.append(f)
+        theta.append(int(f.split('_')[2]))
+        phi.append(int(f.split('_')[3]))
+        
+      
+        
+    count = range(len(filelist))
+                  
+    #sort the data by theta so it is plotted in the correct order
+    sorted_data =  sorted(zip(phi,theta,filelist))
+    theta_sorted = [x[1] for x in sorted_data]
+    filelist_sorted = [x[2] for x in sorted_data]   
+    phi_sorted = [x[0] for x in sorted_data]
+    
+    data = []    
+    
+    #-0.001559 [2,1]
+    for a in zip(filelist_sorted,theta_sorted,phi_sorted):
+        tmpArray = np.genfromtxt(a[0])
+        resids = (OneOne - tmpArray)
+        resids = np.fabs(resids)
+    
+        data.append(np.amax(resids))
+        
+        print '('+str(a[1])+', '+str(a[2])+')'
+        print
+
+    plt.plt(count,data)
+    plt.show()
+
+resid_comparison()            
