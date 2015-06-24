@@ -361,10 +361,18 @@ def plot_residuals():
     resids = residual_table()
     iters = iteration_counter() 
     
-    count = range(resids)    
+    count = range(len(resids))
     
-    plt.plot(count,resids,'r-')
-    plt.plot(count,iters,'k-')
+    fig, ax1 = plt.subplots()
+    
+    ax1.plot(count,resids,'r-',label='Residuals')
+    for tl in ax1.get_yticklabels():
+        tl.set_color('r')
+    
+    ax2 = ax1.twinx()
+    ax2.plot(count,iters,'k-',label='Iterations')
+    
+    
     plt.show()
     
     
