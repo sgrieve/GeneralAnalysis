@@ -204,8 +204,8 @@ def resid_comparison_hold_phi():
     path = 'C:\\Users\\Stuart\\Desktop\\FR\\cosmo\\'
     
     phi_list = [1, 2, 3, 5, 8, 10, 15, 20, 30, 45, 60, 90]
-    #file_prefix = 'z33_26586_'
-    file_prefix = 'z33_17218_'
+    file_prefix = 'z33_26586_'
+    #file_prefix = 'z33_17218_'
     
     #get the 1,1 data which we approximate as correct
     OneOne = np.genfromtxt(path+file_prefix+'1_1_shield.txt')    
@@ -241,7 +241,7 @@ def resid_comparison_hold_phi():
         
         plt.boxplot(BoxDataList)
         plt.plot(range(1,len(DataList)+1),DataList,'r-',linewidth=2)
-        plt.title('Phi [Zenith] step size: '+Labels[0].split(',')[1].strip(')'))
+        plt.title('High Relief. Phi [Zenith] step size: '+Labels[0].split(',')[1].strip(')'))
         ax = plt.gca()
         ax.set_xticklabels(Labels,rotation=45)
         plt.ylim((0,1.2))
@@ -258,8 +258,8 @@ def resid_comparison_hold_theta():
     path = 'C:\\Users\\Stuart\\Desktop\\FR\\cosmo\\'
     
     theta_list = [1, 2, 3, 5, 8, 10, 15, 20, 30, 45, 60, 90, 180, 360]
-    #file_prefix = 'z33_26586_'
-    file_prefix = 'z33_17218_'
+    file_prefix = 'z33_26586_'
+    #file_prefix = 'z33_17218_'
     
     for t in theta_list:
         print 'processing theta: ',t
@@ -295,8 +295,9 @@ def resid_comparison_hold_theta():
             
             
         plt.boxplot(BoxDataList)
-        plt.plot(range(1,len(DataList)+1),DataList,'r-',linewidth=2)
-        plt.title('Theta [Azimuth] step size: '+Labels[1].split(',')[0].strip('('))
+        plt.plot(range(1,len(DataList)+1),DataList,'r-',linewidth=2,label='Absolute Maximum Residual')        
+        plt.title('High Relief. Theta [Azimuth] step size: '+Labels[1].split(',')[0].strip('('))
+        plt.legend(loc=0)
         ax = plt.gca()
         ax.set_xticklabels(Labels,rotation=45)
         plt.ylim((0,1.2))
@@ -305,6 +306,73 @@ def resid_comparison_hold_theta():
         plt.savefig('Theta_Azimuth_resid_'+Labels[1].split(',')[0].strip('(')+'.png')
         plt.clf()
         
+ 
+def iteration_counter():
+    phi_list = [1, 2, 3, 5, 8, 10, 15, 20, 30, 45, 60, 90]
+    theta_list = [1, 2, 3, 5, 8, 10, 15, 20, 30, 45, 60, 90, 180, 360]
+    iter_data = np.empty((len(phi_list),len(theta_list)),dtype=int)
+    
+    iters = []
         
+    for i,p in enumerate(phi_list):
+        for j,t in enumerate(theta_list):
+            iter_data[i][j] = len(range(p,91,p)) * len(range(t,361,t))
+            iters.append(len(range(p,91,p)) * len(range(t,361,t)))
+    
+    with open('Iteration_table.csv','w') as w:
+        for i,p in enumerate(phi_list):
+            w.write(str(list(iter_data[i]))[1:-1]+'\n')
+    
+    return iters
+    
+def residual_table():
+    
+    phi_list = [1, 2, 3, 5, 8, 10, 15, 20, 30, 45, 60, 90]
+    theta_list = [1, 2, 3, 5, 8, 10, 15, 20, 30, 45, 60, 90, 180, 360]
+    resid_data = np.empty((len(phi_list),len(theta_list)))
 
-resid_comparison_hold_theta()
+    path = 'C:\\Users\\Stuart\\Desktop\\FR\\cosmo\\'
+    
+    
+    #file_prefix = 'z33_26586_'
+    file_prefix = 'z33_17218_'
+    
+    residuals = []
+
+    OneOne = np.genfromtxt(path+file_prefix+'1_1_shield.txt')
+
+
+    for i,p in enumerate(phi_list):
+        for j,t in enumerate(theta_list):
+            filename = path+file_prefix+`t`+'_'+`p`+'_shield.txt' 
+            
+            tmpArray = np.genfromtxt(filename)
+            resid = np.amax(np.fabs(OneOne-tmpArray))
+            residuals.append(resid)
+            resid_data[i][j] = resid   
+
+    with open('Resid_table.csv','w') as w:
+        for i,p in enumerate(phi_list):
+            w.write(str(list(resid_data[i]))[1:-1]+'\n')
+    
+    return residuals
+    
+def plot_residuals():
+    resids = residual_table()
+    iters = iteration_counter() 
+    
+    count = range(resids)    
+    
+    plt.plot(count,resids,'r-')
+    plt.plot(count,iters,'k-')
+    plt.show()
+    
+    
+plot_residuals()
+
+#residual_table()
+#iteration_counter()       
+
+#resid_comparison_hold_phi()
+#print 'half way'
+#resid_comparison_hold_theta()
