@@ -109,7 +109,7 @@ def SetUpPlot():
 
 def PlotRaw(Sc,RawData):
     plt.scatter(E_Star(Sc,RawData[3],RawData[2]),R_Star(Sc,RawData[4],RawData[2]),
-    marker='.',s=0.5,alpha=0.2,label='Raw Data')
+    marker='*',alpha=0.2,label='Raw Data')
 
 def PlotBins(Sc,RawData,NumBins,MinimumBinSize=100):
     E_s = E_Star(Sc, RawData[3], RawData[2])
@@ -147,6 +147,14 @@ def PlotLandscapeAverage(Sc,RawData):
 def R_Star_Model(x):
     return (1./x) * (np.sqrt(1.+(x*x)) - np.log(0.5*(1. + np.sqrt(1.+(x*x)))) - 1.)
 
+def R_Star_Model_2(N):
+    x = np.linspace(0.1,1000,num=N)
+    return (1./x) * (np.sqrt(1.+(x*x)) - np.log(0.5*(1. + np.sqrt(1.+(x*x)))) - 1.)
+
+#k = [LH,R,CHT]    
+def R_Star_2(k, Sc):
+    return k[1]/(k[0]*Sc) 
+
 def E_Star(Sc,CHT,LH):
     return (2.*np.fabs(CHT)*LH)/Sc
 
@@ -169,14 +177,22 @@ def GetBestFitSc(Method, RawData, PatchData, BasinData):
     if Method.lower() == 'raw':
 
         Fit_Sc,_,_,_,_ = optimize.leastsq(Residuals, ScInit, args=(RawData[4], RawData[2], RawData[3]),full_output=True)
-
+        params, _ = optimize.curve_fit(R_Star_2, (RawData[2], RawData[4]), R_Star_Model_2(len(RawData[2])), ScInit)
+        print params
+        print Fit_Sc
     elif Method.lower() == 'patches':
 
         Fit_Sc,_,_,_,_ = optimize.leastsq(Residuals, ScInit, args=(PatchData[9], PatchData[1], PatchData[5]),full_output=True)
-
+        params, _ = optimize.curve_fit(R_Star_2, (PatchData[1], PatchData[9]), R_Star_Model_2(len(PatchData[9])), ScInit)
+        print params
+        print Fit_Sc
+        optimize.curve_fit()
     elif Method.lower() == 'basins':
 
         Fit_Sc,_,_,_,_ = optimize.leastsq(Residuals, ScInit, args=(BasinData[3], BasinData[1], BasinData[2]),full_output=True)
+        params, _ = optimize.curve_fit(R_Star_2, (BasinData[1], BasinData[3]), R_Star_Model_2(len(BasinData[3])), ScInit)
+        print params
+        print Fit_Sc
 
     return Fit_Sc[0]
 
@@ -207,7 +223,7 @@ def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,BinFlag,PatchFlag,BasinFlag,Landsc
     ax = SetUpPlot()
 
     Sc = GetBestFitSc(Sc_Method, RawData, PatchData, BasinData)
-
+    #Sc = 0.9
     DrawCurve()
 
     if RawFlag:
@@ -222,11 +238,12 @@ def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,BinFlag,PatchFlag,BasinFlag,Landsc
         PlotLandscapeAverage(Sc,RawData)
 
     Labels(Sc,Sc_Method)
+    plt.show()
 
     SavePlot(Path,Prefix,Format)
 
 
-MakeThePlot('C:\\Users\\Stuart\\Desktop\\FR\\er_data\\','CR2_gn_s','patches',1,20,0,0,0,2,Format='png')
+MakeThePlot('C:\\Users\\Stuart\\Desktop\\FR\\er_data\\','CR2_gn','raw',1,0,1,1,0,2,Format='png')
 
 
 
