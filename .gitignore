@@ -227,3 +227,4 @@ pip-log.txt
 #############
 
 *.csv
+curve_fit_test.py
