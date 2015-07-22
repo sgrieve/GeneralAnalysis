@@ -10,6 +10,7 @@ from matplotlib import rcParams
 import numpy as np
 import scipy.optimize as optimize
 import bin_data as Bin
+from scipy.stats import gaussian_kde
 
 def LoadData(Path,Prefix,Order):
 
@@ -110,6 +111,20 @@ def SetUpPlot():
 def PlotRaw(Sc,RawData):
     plt.scatter(E_Star(Sc,RawData[3],RawData[2]),R_Star(Sc,RawData[4],RawData[2]),
     marker='*',alpha=0.2,label='Raw Data')
+    
+def PlotRawDensity(Sc,RawData,Thin):
+    x = E_Star(Sc,RawData[3],RawData[2])
+    y = R_Star(Sc,RawData[4],RawData[2])
+    
+    if Thin:
+        x = x
+        y = y[::Thin]  
+    
+    xy = np.vstack([x,y])
+    density = gaussian_kde(xy)(xy)
+    
+    plt.scatter(x,y,c=density,edgecolor='',cmap=plt.get_cmap("autumn_r"))
+    plt.colorbar()
 
 def PlotBins(Sc,RawData,NumBins,MinimumBinSize=100):
     E_s = E_Star(Sc, RawData[3], RawData[2])
@@ -122,9 +137,9 @@ def PlotBins(Sc,RawData,NumBins,MinimumBinSize=100):
     bin_y = np.ma.masked_where(count<MinimumBinSize, bin_y)
     #these lines produce a meaningless warning - don't know how to solve it yet.
 
-    #only plot errorbars for y as std dev of x is just the bin width ==  meaningless
+    #only plot errorbars for y as std dev of x is just the bin width == meaningless
     plt.errorbar(bin_x, bin_y, yerr=bin_std_y, fmt='bo',label='Binned Data')
-
+    
 def PlotPatches(Sc,PatchData):
     plt.errorbar(E_Star(Sc,PatchData[5],PatchData[1]),R_Star(Sc,PatchData[9],PatchData[1]),
     fmt='ro',label='Hilltop Patch Data')
@@ -186,7 +201,6 @@ def GetBestFitSc(Method, RawData, PatchData, BasinData):
         params, _ = optimize.curve_fit(R_Star_2, (PatchData[1], PatchData[9]), R_Star_Model_2(len(PatchData[9])), ScInit)
         print params
         print Fit_Sc
-        optimize.curve_fit()
     elif Method.lower() == 'basins':
 
         Fit_Sc,_,_,_,_ = optimize.leastsq(Residuals, ScInit, args=(BasinData[3], BasinData[1], BasinData[2]),full_output=True)
@@ -216,7 +230,7 @@ def Labels(Sc,Method):
 def SavePlot(Path,Prefix,Format):
     plt.savefig(Path+Prefix+'_E_R_Star.'+Format,dpi=500)
 
-def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,BinFlag,PatchFlag,BasinFlag,LandscapeFlag,Order,Format='png'):
+def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,DensityFlag,BinFlag,PatchFlag,BasinFlag,LandscapeFlag,Order,Format='png'):
 
     RawData,PatchData,BasinData = LoadData(Path,Prefix,Order)
 
@@ -228,6 +242,8 @@ def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,BinFlag,PatchFlag,BasinFlag,Landsc
 
     if RawFlag:
         PlotRaw(Sc,RawData)
+    if DensityFlag:
+        PlotRawDensity(Sc,RawData,DensityFlag)
     if BinFlag:
         PlotBins(Sc,RawData,BinFlag)
     if PatchFlag:
@@ -243,7 +259,7 @@ def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,BinFlag,PatchFlag,BasinFlag,Landsc
     SavePlot(Path,Prefix,Format)
 
 
-MakeThePlot('C:\\Users\\Stuart\\Desktop\\FR\\er_data\\','CR2_gn','raw',1,0,1,1,0,2,Format='png')
+MakeThePlot('C:\\Users\\Stuart\\Dropbox\\data\\','GM_FP','patches',0,50,0,0,0,0,2,Format='png')
 
 
 
