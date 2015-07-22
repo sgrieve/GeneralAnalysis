@@ -236,6 +236,18 @@ def Labels(Sc,Method):
 def SavePlot(Path,Prefix,Format):
     plt.savefig(Path+Prefix+'_E_R_Star.'+Format,dpi=500)
 
+
+def GMRoering():
+    #plots the gm datapoints from roering 2007 for testing
+    x = [1.68]*2
+    y = [0.34,0.43]
+    
+    xerr = [0.7]*2
+    yerr = [0.17,0.2]
+    
+    plt.errorbar(x,y,yerr,xerr,'k^',label='Roering et al. 2007 Data')
+    
+
 def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,DensityFlag,BinFlag,PatchFlag,BasinFlag,LandscapeFlag,Order,Format='png'):
 
     RawData,PatchData,BasinData = LoadData(Path,Prefix,Order)
@@ -259,13 +271,15 @@ def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,DensityFlag,BinFlag,PatchFlag,Basi
     if LandscapeFlag:
         PlotLandscapeAverage(Sc,RawData)
 
+
+    GMRoering()
     Labels(Sc,Sc_Method)
     plt.show()
 
     SavePlot(Path,Prefix,Format)
 
 
-MakeThePlot('C:\\Users\\Stuart\\Dropbox\\data\\','GM_FP','patches',0,50,0,0,0,0,2,Format='png')
+MakeThePlot('C:\\Users\\Stuart\\Dropbox\\data\\','GM_FP','patches',0,0,0,0,1,0,2,Format='png')
 
 
 
