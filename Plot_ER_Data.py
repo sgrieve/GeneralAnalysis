@@ -276,10 +276,10 @@ def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,DensityFlag,BinFlag,PatchFlag,Basi
     Labels(Sc,Sc_Method)
     plt.show()
 
-    SavePlot(Path,Prefix,Format)
+    #SavePlot(Path,Prefix,Format)
 
 
-MakeThePlot('C:\\Users\\Stuart\\Dropbox\\data\\','GM_FP','patches',0,20,0,1,0,0,2,ForceSc=False,Format='png')
+MakeThePlot('C:\\Users\\Stuart\\Dropbox\\data\\','GM_FP200','patches',0,0,0,1,1,0,3,ForceSc=False,Format='png')
 
 
 
