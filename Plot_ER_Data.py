@@ -113,18 +113,24 @@ def PlotRaw(Sc,RawData):
     marker='*',alpha=0.2,label='Raw Data')
     
 def PlotRawDensity(Sc,RawData,Thin):
+    #http://stackoverflow.com/a/20107592/1627162
     x = E_Star(Sc,RawData[3],RawData[2])
     y = R_Star(Sc,RawData[4],RawData[2])
     
     if Thin:
-        x = x
+        x = x[::Thin]
         y = y[::Thin]  
     
     xy = np.vstack([x,y])
     density = gaussian_kde(xy)(xy)
+
+    #order the points by density so highest density is on top in the plot    
+    idx = density.argsort()
+    x, y, density = x[idx], y[idx], density[idx]
     
     plt.scatter(x,y,c=density,edgecolor='',cmap=plt.get_cmap("autumn_r"))
-    plt.colorbar()
+    cbar = plt.colorbar()
+    cbar.set_label('Probability Distribution Function')
 
 def PlotBins(Sc,RawData,NumBins,MinimumBinSize=100):
     E_s = E_Star(Sc, RawData[3], RawData[2])
