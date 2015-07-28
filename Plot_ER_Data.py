@@ -246,6 +246,16 @@ def GMRoering():
     
     plt.errorbar(x,y,yerr,xerr,'k^',label='Roering et al. 2007')
     
+def OCRRoering():
+    #plots the gm datapoints from roering 2007 for testing
+    x = [6.3]*2
+    y = [0.57,0.64]
+    
+    xerr = [2.1]*2
+    yerr = [0.23,0.18]
+    
+    plt.errorbar(x,y,yerr,xerr,'k^',label='Roering et al. 2007')
+    
 def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,DensityFlag,BinFlag,PatchFlag,BasinFlag,LandscapeFlag,Order,ForceSc=False,Format='png'):
 
     RawData,PatchData,BasinData = LoadData(Path,Prefix,Order)
@@ -271,15 +281,16 @@ def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,DensityFlag,BinFlag,PatchFlag,Basi
     if LandscapeFlag:
         PlotLandscapeAverage(Sc,RawData)
 
-
-    GMRoering()
+    #OCRRoering()
+    #GMRoering()
+    
     Labels(Sc,Sc_Method)
     plt.show()
 
     #SavePlot(Path,Prefix,Format)
 
 
-MakeThePlot('C:\\Users\\Stuart\\Dropbox\\data\\','GM_FP200','patches',0,0,0,1,1,0,3,ForceSc=False,Format='png')
+MakeThePlot('C:\\Users\\Stuart\\Dropbox\\data\\final\\','OR','raw',0,0,0,1,1,0,2,ForceSc=False,Format='png')
 
 
 
