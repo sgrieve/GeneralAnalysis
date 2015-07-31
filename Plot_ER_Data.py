@@ -86,7 +86,12 @@ def LoadData(Path,Prefix,Order):
     BasinMask = np.empty(BasinData.shape,dtype=bool)
     BasinMask[:,:] = (BasinData[4,:] > 0.4)[np.newaxis,:]
     BasinData = np.ma.MaskedArray(BasinData,mask=BasinMask)
-
+    
+    # Mask out the rows where there are too few data points
+    BasinMask = np.empty(BasinData.shape,dtype=bool)
+    BasinMask[:,:] = (BasinData[6,:] < 100)[np.newaxis,:]
+    BasinData = np.ma.MaskedArray(BasinData,mask=BasinMask)
+        
     return RawData,PatchData,BasinData
 
 def SetUpPlot():
@@ -163,7 +168,7 @@ def PlotLandscapeAverage(Sc,RawData):
     plt.errorbar(E_Star_avg,R_Star_avg,yerr=R_Star_std,xerr=E_Star_std,
     fmt='ko',label='Landscape Average')
 
-def R_Star_Model(x):
+def R_Star_Model(x):    
     return (1./x) * (np.sqrt(1.+(x*x)) - np.log(0.5*(1. + np.sqrt(1.+(x*x)))) - 1.)
 
 def E_Star(Sc,CHT,LH):
@@ -179,7 +184,7 @@ def DrawCurve():
     #plot the e* r* curve from roering 2007
     x = np.arange(0.01, 1000, 0.1)
     plt.plot(x, R_Star_Model(x), 'k-', linewidth=2, label='Nonlinear Flux Law')
-
+        
 def GetBestFitSc(Method, RawData, PatchData, BasinData):
 
     ScInit = 0.8  # Need to have an initial for the optimizer, any valid Sc value can be used - will not impact the final value
@@ -273,16 +278,15 @@ def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,DensityFlag,BinFlag,PatchFlag,Basi
     GMRoering()
     
     Labels(Sc,Sc_Method,ForceSc)
-    plt.show()
+    #plt.show()
 
-    #SavePlot(Path,Prefix,Format)
-
-MakeThePlot('C:\\Users\\Stuart\\Dropbox\\data\\final\\','OR','patches',0,0,0,1,1,0,2,ForceSc=False,Format='png')
-
-
-#MakeThePlot('','CR2_gn_s',0,0,1,Format='png')
+    SavePlot(Path,Prefix+'_'+Sc_Method,Format)
+    plt.clf()
 
 
-#RawData,PatchData = LoadData('C:\\Users\\Stuart\\Desktop\\FR\\er_data\\','CR2_gn_s')
+#for a in ['OR','NC','CR','GM']:
+#    for b in ['raw','patches','basins']:
+#        MakeThePlot('C:\\Users\\Stuart\\Dropbox\\data\\final\\',a,b,0,0,0,1,1,0,2,ForceSc=False,Format='png')
 
-#print GetBestFitSc('patches', RawData, PatchData)
+MakeThePlot('C:\\Users\\Stuart\\Dropbox\\data\\final\\','OR','basins',0,0,0,1,1,0,2,ForceSc=False,Format='png')
+
