@@ -46,9 +46,9 @@ def LoadData(Path,Prefix,Order):
         no_of_cols = len(patch.readline().split(','))
         patchdata = patch.readlines()
 
-    #dimensions will be 17Xlen(patchdata) no_of_cols = 17
+    #dimensions will be 18Xlen(patchdata) no_of_cols = 18
     #and the row order will follow the header format in the input file:
-    #Final_ID lh_means lh_medians lh_std_devs lh_std_errs cht_means cht_medians cht_std_devs cht_std_errs r_means r_medians r_std_devs r_std_errs s_means s_medians s_std_devs s_std_errs
+    #Final_ID lh_means lh_medians lh_std_devs lh_std_errs cht_means cht_medians cht_std_devs cht_std_errs r_means r_medians r_std_devs r_std_errs s_means s_medians s_std_devs s_std_errs patch_size
 
     no_of_lines = len(patchdata)
 
@@ -90,7 +90,6 @@ def LoadData(Path,Prefix,Order):
     return RawData,PatchData,BasinData
 
 def SetUpPlot():
-    #returning ax for now, may not need to expose it like this.
     rcParams['font.family'] = 'sans-serif'
     rcParams['font.sans-serif'] = ['arial']
     rcParams['font.size'] = 14
@@ -103,14 +102,12 @@ def SetUpPlot():
     plt.xlabel('Dimensionless Erosion Rate, E*')
     plt.ylabel('Dimensionless Relief, R*')
 
-    plt.ylim(0.1,1)
+    plt.ylim(0.05,1.1)
     plt.xlim(0.1,1000)
-
-    return ax
 
 def PlotRaw(Sc,RawData):
     plt.scatter(E_Star(Sc,RawData[3],RawData[2]),R_Star(Sc,RawData[4],RawData[2]),
-    marker='*',alpha=0.2,label='Raw Data')
+    marker='.',alpha=0.2,label='Raw Data')
     
 def PlotRawDensity(Sc,RawData,Thin):
     #http://stackoverflow.com/a/20107592/1627162
@@ -147,7 +144,8 @@ def PlotBins(Sc,RawData,NumBins,MinimumBinSize=100):
     plt.errorbar(bin_x, bin_y, yerr=bin_std_y, fmt='bo',label='Binned Data')
     
 def PlotPatches(Sc,PatchData):
-    plt.errorbar(E_Star(Sc,PatchData[5],PatchData[1]),R_Star(Sc,PatchData[9],PatchData[1]),
+                  
+    plt.errorbar(E_Star(Sc,PatchData[6],PatchData[2]),R_Star(Sc,PatchData[10],PatchData[2]),
     fmt='ro',label='Hilltop Patch Data')
 
 def PlotBasins(Sc,BasinData):
@@ -167,14 +165,6 @@ def PlotLandscapeAverage(Sc,RawData):
 
 def R_Star_Model(x):
     return (1./x) * (np.sqrt(1.+(x*x)) - np.log(0.5*(1. + np.sqrt(1.+(x*x)))) - 1.)
-
-def R_Star_Model_2(N):
-    x = np.linspace(0.1,1000,num=N)
-    return (1./x) * (np.sqrt(1.+(x*x)) - np.log(0.5*(1. + np.sqrt(1.+(x*x)))) - 1.)
-
-#k = [LH,R,CHT]    
-def R_Star_2(k, Sc):
-    return k[1]/(k[0]*Sc) 
 
 def E_Star(Sc,CHT,LH):
     return (2.*np.fabs(CHT)*LH)/Sc
@@ -196,27 +186,17 @@ def GetBestFitSc(Method, RawData, PatchData, BasinData):
     Fit_Sc = [] #Need to initialize this in case Method is incorrectly defined. Need some error handling!
 
     if Method.lower() == 'raw':
-
         Fit_Sc,_,_,_,_ = optimize.leastsq(Residuals, ScInit, args=(RawData[4], RawData[2], RawData[3]),full_output=True)
-        params, _ = optimize.curve_fit(R_Star_2, (RawData[2], RawData[4]), R_Star_Model_2(len(RawData[2])), ScInit)
-        print params
-        print Fit_Sc
+                
     elif Method.lower() == 'patches':
-
         Fit_Sc,_,_,_,_ = optimize.leastsq(Residuals, ScInit, args=(PatchData[9], PatchData[1], PatchData[5]),full_output=True)
-        params, _ = optimize.curve_fit(R_Star_2, (PatchData[1], PatchData[9]), R_Star_Model_2(len(PatchData[9])), ScInit)
-        print params
-        print Fit_Sc
-    elif Method.lower() == 'basins':
 
+    elif Method.lower() == 'basins':
         Fit_Sc,_,_,_,_ = optimize.leastsq(Residuals, ScInit, args=(BasinData[3], BasinData[1], BasinData[2]),full_output=True)
-        params, _ = optimize.curve_fit(R_Star_2, (BasinData[1], BasinData[3]), R_Star_Model_2(len(BasinData[3])), ScInit)
-        print params
-        print Fit_Sc
 
     return Fit_Sc[0]
 
-def Labels(Sc,Method):
+def Labels(Sc,Method,ForceSc):
     plt.legend(loc=4)
 
     #in case Method is invalid
@@ -231,7 +211,10 @@ def Labels(Sc,Method):
     elif Method.lower() == 'basins':
         fit_description = ' from basin average data = '
 
-    plt.title('Best fit $\mathregular{S_c}$'+fit_description+str(round(Sc,2)))
+    if ForceSc:
+        plt.title('$\mathregular{S_c}$ forced as = ' + str(round(Sc,2)))
+    else:
+        plt.title('Best fit $\mathregular{S_c}$'+fit_description+str(round(Sc,2)))
 
 def SavePlot(Path,Prefix,Format):
     plt.savefig(Path+Prefix+'_E_R_Star.'+Format,dpi=500)
@@ -244,7 +227,9 @@ def GMRoering():
     xerr = [0.7]*2
     yerr = [0.17,0.2]
     
-    plt.errorbar(x,y,yerr,xerr,'k^',label='Roering et al. 2007')
+    #make better labels by double plotting
+    plt.plot(x,y,'k^',label='Roering et al. 2007')
+    plt.errorbar(x,y,yerr,xerr,'k^')
     
 def OCRRoering():
     #plots the gm datapoints from roering 2007 for testing
@@ -254,13 +239,16 @@ def OCRRoering():
     xerr = [2.1]*2
     yerr = [0.23,0.18]
     
-    plt.errorbar(x,y,yerr,xerr,'k^',label='Roering et al. 2007')
+    #make better labels by double plotting
+    plt.plot(x,y,'k^',label='Roering et al. 2007')
+    plt.errorbar(x,y,yerr,xerr,'k^')
     
 def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,DensityFlag,BinFlag,PatchFlag,BasinFlag,LandscapeFlag,Order,ForceSc=False,Format='png'):
 
     RawData,PatchData,BasinData = LoadData(Path,Prefix,Order)
 
-    ax = SetUpPlot()
+    SetUpPlot()
+    
     if ForceSc:
         Sc = ForceSc
     else:
@@ -281,17 +269,15 @@ def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,DensityFlag,BinFlag,PatchFlag,Basi
     if LandscapeFlag:
         PlotLandscapeAverage(Sc,RawData)
 
-    #OCRRoering()
-    #GMRoering()
+    OCRRoering()
+    GMRoering()
     
-    Labels(Sc,Sc_Method)
+    Labels(Sc,Sc_Method,ForceSc)
     plt.show()
 
     #SavePlot(Path,Prefix,Format)
 
-
-MakeThePlot('C:\\Users\\Stuart\\Dropbox\\data\\final\\','OR','raw',0,0,0,1,1,0,2,ForceSc=False,Format='png')
-
+MakeThePlot('C:\\Users\\Stuart\\Dropbox\\data\\final\\','OR','patches',0,0,0,1,1,0,2,ForceSc=False,Format='png')
 
 
 #MakeThePlot('','CR2_gn_s',0,0,1,Format='png')
