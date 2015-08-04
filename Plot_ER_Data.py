@@ -146,7 +146,9 @@ def PlotBins(Sc,RawData,NumBins,MinimumBinSize=100):
     #these lines produce a meaningless warning - don't know how to solve it yet.
 
     #only plot errorbars for y as std dev of x is just the bin width == meaningless
-    plt.errorbar(bin_x, bin_y, yerr=bin_std_y, fmt='bo',label='Binned Raw Data')
+    #double plot to make better labels
+    plt.plot(bin_x, bin_y, 'bo',label='Binned Raw Data')    
+    plt.errorbar(bin_x, bin_y, yerr=bin_std_y, fmt='bo')
 
 def PlotPatchBins(Sc,PatchData,NumBins,MinimumBinSize=10):
     E_s = E_Star(Sc,PatchData[6],PatchData[2])
@@ -160,8 +162,9 @@ def PlotPatchBins(Sc,PatchData,NumBins,MinimumBinSize=10):
     #these lines produce a meaningless warning - don't know how to solve it yet.
 
     #only plot errorbars for y as std dev of x is just the bin width == meaningless
-    plt.errorbar(bin_x, bin_y, yerr=bin_std_y, fmt='bo',label='Binned Patch Data')
-
+    #double plot to make nicer labels
+    plt.plot(bin_x, bin_y, 'bo',label='Binned Patch Data')
+    plt.errorbar(bin_x, bin_y, yerr=bin_std_y, fmt='bo')
     
 def PlotPatches(Sc,PatchData):                     
     plt.errorbar(E_Star(Sc,PatchData[6],PatchData[2]),R_Star(Sc,PatchData[10],PatchData[2]),
