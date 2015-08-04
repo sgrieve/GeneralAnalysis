@@ -146,10 +146,24 @@ def PlotBins(Sc,RawData,NumBins,MinimumBinSize=100):
     #these lines produce a meaningless warning - don't know how to solve it yet.
 
     #only plot errorbars for y as std dev of x is just the bin width == meaningless
-    plt.errorbar(bin_x, bin_y, yerr=bin_std_y, fmt='bo',label='Binned Data')
+    plt.errorbar(bin_x, bin_y, yerr=bin_std_y, fmt='bo',label='Binned Raw Data')
+
+def PlotPatchBins(Sc,PatchData,NumBins,MinimumBinSize=10):
+    E_s = E_Star(Sc,PatchData[6],PatchData[2])
+    R_s = R_Star(Sc,PatchData[10],PatchData[2])
+
+    bin_x, bin_std_x, bin_y, bin_std_y, count = Bin.bin_data_log10(E_s,R_s,NumBins)
+
+    #filter bins based on the number of data points used in their calculation
+    bin_x = np.ma.masked_where(count<MinimumBinSize, bin_x)
+    bin_y = np.ma.masked_where(count<MinimumBinSize, bin_y)
+    #these lines produce a meaningless warning - don't know how to solve it yet.
+
+    #only plot errorbars for y as std dev of x is just the bin width == meaningless
+    plt.errorbar(bin_x, bin_y, yerr=bin_std_y, fmt='bo',label='Binned Patch Data')
+
     
-def PlotPatches(Sc,PatchData):
-                  
+def PlotPatches(Sc,PatchData):                     
     plt.errorbar(E_Star(Sc,PatchData[6],PatchData[2]),R_Star(Sc,PatchData[10],PatchData[2]),
     fmt='ro',label='Hilltop Patch Data')
 
@@ -165,8 +179,9 @@ def PlotLandscapeAverage(Sc,RawData):
     E_Star_std = np.std(E_Star_temp)
     R_Star_std = np.std(R_Star_temp)
 
+    plt.plot(E_Star_avg,R_Star_avg,'ko',label='Landscape Average')
     plt.errorbar(E_Star_avg,R_Star_avg,yerr=R_Star_std,xerr=E_Star_std,
-    fmt='ko',label='Landscape Average')
+    fmt='ko')
 
 def R_Star_Model(x):    
     return (1./x) * (np.sqrt(1.+(x*x)) - np.log(0.5*(1. + np.sqrt(1.+(x*x)))) - 1.)
@@ -223,6 +238,7 @@ def Labels(Sc,Method,ForceSc):
 
 def SavePlot(Path,Prefix,Format):
     plt.savefig(Path+Prefix+'_E_R_Star.'+Format,dpi=500)
+    plt.clf()
 
 def GMRoering():
     #plots the gm datapoints from roering 2007 for testing
@@ -231,7 +247,7 @@ def GMRoering():
     
     xerr = [0.7]*2
     yerr = [0.17,0.2]
-    
+        
     #make better labels by double plotting
     plt.plot(x,y,'k^',label='Roering et al. 2007')
     plt.errorbar(x,y,yerr,xerr,'k^')
@@ -248,7 +264,7 @@ def OCRRoering():
     plt.plot(x,y,'k^',label='Roering et al. 2007')
     plt.errorbar(x,y,yerr,xerr,'k^')
     
-def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,DensityFlag,BinFlag,PatchFlag,BasinFlag,LandscapeFlag,Order,ForceSc=False,Format='png'):
+def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,DensityFlag,BinFlag,BinSize,PatchFlag,BasinFlag,LandscapeFlag,Order,ForceSc=False,Format='png'):
 
     RawData,PatchData,BasinData = LoadData(Path,Prefix,Order)
 
@@ -265,8 +281,10 @@ def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,DensityFlag,BinFlag,PatchFlag,Basi
         PlotRaw(Sc,RawData)
     if DensityFlag:
         PlotRawDensity(Sc,RawData,DensityFlag)
-    if BinFlag:
-        PlotBins(Sc,RawData,BinFlag)
+    if BinFlag.lower() == 'patches':
+        PlotPatchBins(Sc,PatchData,BinSize)
+    elif BinFlag.lower() == 'raw':
+        PlotPatchBins(Sc,PatchData,BinSize)
     if PatchFlag:
         PlotPatches(Sc,PatchData)
     if BasinFlag:
@@ -274,19 +292,19 @@ def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,DensityFlag,BinFlag,PatchFlag,Basi
     if LandscapeFlag:
         PlotLandscapeAverage(Sc,RawData)
 
-    OCRRoering()
-    GMRoering()
+    #OCRRoering()
+    #GMRoering()
     
     Labels(Sc,Sc_Method,ForceSc)
-    #plt.show()
+    plt.show()
 
-    SavePlot(Path,Prefix+'_'+Sc_Method,Format)
-    plt.clf()
+    #SavePlot(Path,Prefix+'_force079',Format)
+    
 
 
 #for a in ['OR','NC','CR','GM']:
 #    for b in ['raw','patches','basins']:
 #        MakeThePlot('C:\\Users\\Stuart\\Dropbox\\data\\final\\',a,b,0,0,0,1,1,0,2,ForceSc=False,Format='png')
 
-MakeThePlot('C:\\Users\\Stuart\\Dropbox\\data\\final\\','OR','basins',0,0,0,1,1,0,2,ForceSc=False,Format='png')
+MakeThePlot('C:\\Users\\Stuart\\Dropbox\\data\\final\\','CR','basins',0,0,'patches',20,0,0,0,2,ForceSc=0.8,Format='png')
 
