@@ -240,6 +240,13 @@ def SavePlot(Path,Prefix,Format):
     plt.savefig(Path+Prefix+'_E_R_Star.'+Format,dpi=500)
     plt.clf()
 
+def CRHurst():
+    #plots the hurst 2012 figure 14 points for testing
+    #needs the errorbars
+    x = [1.15541793184, 2.96599962747, 5.06753455114, 6.87537359947, 8.86462081724, 10.9425778888, 12.9426702489, 14.9866553641, 16.9785507349, 19.0034609662, 20.9560856862, 22.8577931724, 24.6085876779, 27.3044634219, 28.3873092441, 31.1978149101, 32.8625186998, 35.2335006909, 37.2282499959, 43.8911646306, 45.5936728215]    
+    y = [0.379133283693, 0.435531356239, 0.547479389809, 0.588874111323, 0.652649344881, 0.696659574468, 0.824275084903, 0.733856012658, 0.783243670886, 0.836195147679, 0.920291139241, 0.862545710267, 0.953440506329, 0.851824367089, 0.97046835443, 0.909219409283, 0.964772151899, 1.08295780591, 0.904050632911, 1.13525316456, 0.934139240506]
+    plt.plot(x,y,'k^',label='Hurst et al. 2012')
+
 def GMRoering():
     #plots the gm datapoints from roering 2007 for testing
     x = [1.68]*2
@@ -294,6 +301,7 @@ def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,DensityFlag,BinFlag,BinSize,PatchF
 
     #OCRRoering()
     #GMRoering()
+    CRHurst()
     
     Labels(Sc,Sc_Method,ForceSc)
     plt.show()
