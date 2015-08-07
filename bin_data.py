@@ -10,6 +10,7 @@ August 2012: Functions added for generating frequency distributions
 
 # Import Modules
 import numpy as np
+from scipy.stats import sem
 
 ##Binit
 def bin_data(datax,datay,numbins,botedge=-99,topedge=-99):
@@ -132,6 +133,9 @@ def bin_data_log10(datax,datay,numbins,botedge=-99,topedge=-99):
     binmembercount = np.zeros(numbins)
     binmeandatay = np.zeros(numbins)
     binstddatay = np.zeros(numbins)
+    
+    binstderrx = np.zeros(numbins)
+    binstderry = np.zeros(numbins)
    
     for i in range (0,numbins):
         flagbinmembers = (whichbin == i)
@@ -140,19 +144,23 @@ def bin_data_log10(datax,datay,numbins,botedge=-99,topedge=-99):
         if binmembercount[i] >2:
             binmeandatax[i] = np.mean(binmemberdatax)
             binstddatax[i] = np.std(binmemberdatax)
+            binstderrx[i] = sem(binmemberdatax)
         else:
             binmeandatax[i] = np.nan
             binstddatax[i] = np.nan
+            binstderry[i] = np.nan
         
         binmemberdatay = datay[flagbinmembers]
         if binmembercount[i] >2:
             binmeandatay[i] = np.mean(binmemberdatay)
             binstddatay[i] = np.std(binmemberdatay)
+            binstderry[i] = sem(binmemberdatay)
         else:
             binmeandatay[i] = np.nan
             binstddatay[i] = np.nan
+            binstderry[i] = np.nan
 
-    return 10**binmeandatax, 10**binstddatax, binmeandatay, binstddatay, binmembercount
+    return 10**binmeandatax, 10**binstddatax, binmeandatay, binstddatay, binstderrx, binstderry, binmembercount
 
 def bin_frequency_data(datax,numbins,botedge=-99,topedge=-99):
 
