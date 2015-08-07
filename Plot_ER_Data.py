@@ -63,16 +63,19 @@ def LoadData(Path,Prefix,Order):
     PatchMask = np.empty(PatchData.shape,dtype=bool)
     PatchMask[:,:] = (PatchData[13,:] > 0.4)[np.newaxis,:]
     PatchData = np.ma.MaskedArray(PatchData,mask=PatchMask)
-
+    
     #Next, repeat the process for the Basin data
     with open(Path+Prefix+'_E_R_Star_Basin_'+str(Order)+'_Data.csv','r') as basin:
         no_of_cols = len(basin.readline().split(','))
         basindata = basin.readlines()
 
-    #dimensions will be 7Xlen(basindata) no_of_cols = 7
+    #dimensions will be 11Xlen(basindata) no_of_cols = 11
     #and the row order will follow the header format in the input file:
-    #Basin_ID LH CHT Relief Slope Area Count
+    #Basin_ID LH_mean CHT_mean Relief_mean Slope_mean LH_median CHT_median Relief_median Slope_median Area Count
 
+    #Should probably also compute the basin std devs and std errs. The code is in LSDBasin,
+    #it just needs added to the printing.
+    
     no_of_lines = len(basindata)
 
     BasinData = np.zeros((no_of_cols,no_of_lines),dtype='float64')
@@ -82,14 +85,14 @@ def LoadData(Path,Prefix,Order):
         for a in range(no_of_cols):
             BasinData[a][i] = split[a]
 
-    # Mask out the rows where the mean slope is > 0.4
+    # Mask out the rows where the median slope is > 0.4
     BasinMask = np.empty(BasinData.shape,dtype=bool)
-    BasinMask[:,:] = (BasinData[4,:] > 0.4)[np.newaxis,:]
+    BasinMask[:,:] = (BasinData[8,:] > 0.4)[np.newaxis,:]
     BasinData = np.ma.MaskedArray(BasinData,mask=BasinMask)
     
     # Mask out the rows where there are too few data points
     BasinMask = np.empty(BasinData.shape,dtype=bool)
-    BasinMask[:,:] = (BasinData[6,:] < 100)[np.newaxis,:]
+    BasinMask[:,:] = (BasinData[10,:] < 100)[np.newaxis,:]
     BasinData = np.ma.MaskedArray(BasinData,mask=BasinMask)
         
     return RawData,PatchData,BasinData
@@ -138,7 +141,7 @@ def PlotBins(Sc,RawData,NumBins,MinimumBinSize=100):
     E_s = E_Star(Sc, RawData[3], RawData[2])
     R_s = R_Star(Sc, RawData[4], RawData[2])
 
-    bin_x, bin_std_x, bin_y, bin_std_y, count = Bin.bin_data_log10(E_s,R_s,NumBins)
+    bin_x, bin_std_x, bin_y, bin_std_y, std_err_x, std_err_y, count = Bin.bin_data_log10(E_s,R_s,NumBins)
 
     #filter bins based on the number of data points used in their calculation
     bin_x = np.ma.masked_where(count<MinimumBinSize, bin_x)
@@ -154,7 +157,7 @@ def PlotPatchBins(Sc,PatchData,NumBins,MinimumBinSize=10):
     E_s = E_Star(Sc,PatchData[6],PatchData[2])
     R_s = R_Star(Sc,PatchData[10],PatchData[2])
 
-    bin_x, bin_std_x, bin_y, bin_std_y, count = Bin.bin_data_log10(E_s,R_s,NumBins)
+    bin_x, bin_std_x, bin_y, bin_std_y, std_err_x, std_err_y, count = Bin.bin_data_log10(E_s,R_s,NumBins)
 
     #filter bins based on the number of data points used in their calculation
     bin_x = np.ma.masked_where(count<MinimumBinSize, bin_x)
@@ -162,23 +165,23 @@ def PlotPatchBins(Sc,PatchData,NumBins,MinimumBinSize=10):
     #these lines produce a meaningless warning - don't know how to solve it yet.
 
     #only plot errorbars for y as std dev of x is just the bin width == meaningless
-    #double plot to make nicer labels
+    #double plot to make nicer labels     
     plt.plot(bin_x, bin_y, 'bo',label='Binned Patch Data')
     plt.errorbar(bin_x, bin_y, yerr=bin_std_y, fmt='bo')
     
 def PlotPatches(Sc,PatchData):                     
-    plt.errorbar(E_Star(Sc,PatchData[6],PatchData[2]),R_Star(Sc,PatchData[10],PatchData[2]),
-    fmt='ro',label='Hilltop Patch Data')
-
+        plt.errorbar(E_Star(Sc,PatchData[6],PatchData[2]),R_Star(Sc,PatchData[10],PatchData[2]),
+        fmt='ro',label='Hilltop Patch Data')     
+    
 def PlotBasins(Sc,BasinData):
-    plt.errorbar(E_Star(Sc,BasinData[2],BasinData[1]),R_Star(Sc,BasinData[3],BasinData[1]),
-    fmt='go',label='Basin Data')
-
+        plt.errorbar(E_Star(Sc,BasinData[6],BasinData[5]),R_Star(Sc,BasinData[7],BasinData[5]),
+        fmt='go',label='Basin Data')
+            
 def PlotLandscapeAverage(Sc,RawData):
     E_Star_temp = E_Star(Sc,RawData[3],RawData[2])
     R_Star_temp = R_Star(Sc,RawData[4],RawData[2])
-    E_Star_avg = np.mean(E_Star_temp)
-    R_Star_avg = np.mean(R_Star_temp)
+    E_Star_avg = np.median(E_Star_temp)
+    R_Star_avg = np.median(R_Star_temp)
     E_Star_std = np.std(E_Star_temp)
     R_Star_std = np.std(R_Star_temp)
 
@@ -198,6 +201,26 @@ def R_Star(Sc, R, LH):
 def Residuals(Sc, R, LH, CHT):
     return R_Star_Model(E_Star(Sc,CHT,LH)) - R_Star(Sc, R, LH)
 
+def r_squared(Sc, R, LH, CHT,infodict):
+   
+    print infodict['fvec']
+    ss_err=(infodict['fvec']**2).sum()
+    #ss_tot=((y-y.mean())**2).sum()
+    #rsquared=1-(ss_err/ss_tot)   
+   
+   
+    modeled = R_Star_Model(E_Star(Sc,CHT,LH)) 
+    measured = R_Star(Sc, R, LH)   
+   
+    mean_measured = np.mean(measured)  
+      
+    sqr_err_w_line = np.square((infodict['fvec']))#np.square((measured - modeled))
+    sqr_err_mean = np.square((measured - mean_measured))
+    
+    r_sq = 1.-(np.sum(sqr_err_w_line)/np.sum(sqr_err_mean))    
+        
+    return r_sq
+
 def DrawCurve():
     #plot the e* r* curve from roering 2007
     x = np.arange(0.01, 1000, 0.1)
@@ -209,14 +232,15 @@ def GetBestFitSc(Method, RawData, PatchData, BasinData):
     Fit_Sc = [] #Need to initialize this in case Method is incorrectly defined. Need some error handling!
 
     if Method.lower() == 'raw':
-        Fit_Sc,_,_,_,_ = optimize.leastsq(Residuals, ScInit, args=(RawData[4], RawData[2], RawData[3]),full_output=True)
-                
+        Fit_Sc,_,infodict,_,_ = optimize.leastsq(Residuals, ScInit, args=(RawData[4], RawData[2], RawData[3]),full_output=True)
+        print r_squared(Fit_Sc[0], RawData[4], RawData[2], RawData[3],infodict)                    
     elif Method.lower() == 'patches':
         Fit_Sc,_,_,_,_ = optimize.leastsq(Residuals, ScInit, args=(PatchData[9], PatchData[1], PatchData[5]),full_output=True)
-
+        print r_squared(Fit_Sc[0], PatchData[9], PatchData[1], PatchData[5])
     elif Method.lower() == 'basins':
         Fit_Sc,_,_,_,_ = optimize.leastsq(Residuals, ScInit, args=(BasinData[3], BasinData[1], BasinData[2]),full_output=True)
-
+        print r_squared(Fit_Sc[0], BasinData[3], BasinData[1], BasinData[2])
+        
     return Fit_Sc[0]
 
 def Labels(Sc,Method,ForceSc):
@@ -277,26 +301,26 @@ def OCRRoering():
 def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,DensityFlag,BinFlag,BinSize,PatchFlag,BasinFlag,LandscapeFlag,Order,ForceSc=False,Format='png'):
 
     RawData,PatchData,BasinData = LoadData(Path,Prefix,Order)
-
+       
     SetUpPlot()
+    
+    DrawCurve()
     
     if ForceSc:
         Sc = ForceSc
     else:
         Sc = GetBestFitSc(Sc_Method, RawData, PatchData, BasinData)
-
-    DrawCurve()
-
+    
     if RawFlag:
         PlotRaw(Sc,RawData)
     if DensityFlag:
         PlotRawDensity(Sc,RawData,DensityFlag)
+    if PatchFlag:
+        PlotPatches(Sc,PatchData)
     if BinFlag.lower() == 'patches':
         PlotPatchBins(Sc,PatchData,BinSize)
     elif BinFlag.lower() == 'raw':
         PlotPatchBins(Sc,PatchData,BinSize)
-    if PatchFlag:
-        PlotPatches(Sc,PatchData)
     if BasinFlag:
         PlotBasins(Sc,BasinData)
     if LandscapeFlag:
@@ -307,15 +331,10 @@ def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,DensityFlag,BinFlag,BinSize,PatchF
     CRHurst()
     
     Labels(Sc,Sc_Method,ForceSc)
-    plt.show()
+    #plt.show()
 
-    #SavePlot(Path,Prefix+'_force079',Format)
-    
+    SavePlot(Path,Prefix,Format)    
 
 
-#for a in ['OR','NC','CR','GM']:
-#    for b in ['raw','patches','basins']:
-#        MakeThePlot('C:\\Users\\Stuart\\Dropbox\\data\\final\\',a,b,0,0,0,1,1,0,2,ForceSc=False,Format='png')
-
-MakeThePlot('C:\\Users\\Stuart\\Dropbox\\data\\final\\','CR','basins',0,0,'patches',20,0,0,0,2,ForceSc=0.8,Format='png')
+MakeThePlot('C:\\Users\\Stuart\\Dropbox\\data\\final\\','CR','raw',0,0,'Patches',20,0,0,0,2,ForceSc=0.72,Format='png')
 
