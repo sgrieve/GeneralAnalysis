@@ -175,7 +175,10 @@ def PlotPatches(Sc,PatchData):
     fmt='ro',label='Hilltop Patch Data')     
     
 def PlotBasins(Sc,BasinData):
-        plt.errorbar(E_Star(Sc,BasinData[6],BasinData[5]),R_Star(Sc,BasinData[7],BasinData[5]),
+    e_star = E_Star(Sc,BasinData[2],BasinData[0])
+    r_star = R_Star(Sc,BasinData[1],BasinData[0])
+    
+    plt.errorbar(unp.nominal_values(e_star),unp.nominal_values(r_star),yerr=unp.std_devs(r_star),xerr=unp.std_devs(e_star),
         fmt='go',label='Basin Data')
             
 def PlotLandscapeAverage(Sc,RawData):
@@ -195,8 +198,11 @@ def R_Star_Model(x):
     return (1./x) * (np.sqrt(1.+(x*x)) - np.log(0.5*(1. + np.sqrt(1.+(x*x)))) - 1.)
 
 def E_Star(Sc,CHT,LH):
-    return (2.*unp.fabs(CHT)*LH)/Sc
-
+    if type(LH[0]) == np.float64:
+        return (2.*np.fabs(CHT)*LH)/Sc
+    else:
+        return (2.*unp.fabs(CHT)*LH)/Sc
+   
 def R_Star(Sc, R, LH):
     return R/(LH*Sc)
 
@@ -334,9 +340,9 @@ def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,DensityFlag,BinFlag,BinSize,PatchF
     if BinFlag.lower() == 'patches':
         PlotPatchBins(Sc,PatchData,BinSize)
     elif BinFlag.lower() == 'raw':
-        PlotPatchBins(Sc,PatchData,BinSize)
+        PlotBins(Sc,RawData,BinSize)
     if BasinFlag:
-        PlotBasins(Sc,BasinData)
+        PlotBasins(Sc,BasinDataErrs)
     if LandscapeFlag:
         PlotLandscapeAverage(Sc,RawData)
 
