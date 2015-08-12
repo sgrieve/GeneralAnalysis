@@ -86,19 +86,8 @@ def LoadData(Path,Prefix,Order):
         split = d.split(',')
         for a in range(no_of_cols):
             BasinData[a][i] = split[a]
-
-    # Mask out the rows where the median slope is > 0.4
-    BasinMask = np.empty(BasinData.shape,dtype=bool)
-    BasinMask[:,:] = (BasinData[8,:] > 0.4)[np.newaxis,:]
-    BasinData = np.ma.MaskedArray(BasinData,mask=BasinMask)
-    
-    # Mask out the rows where there are too few data points
-    BasinMask = np.empty(BasinData.shape,dtype=bool)
-    BasinMask[:,:] = (BasinData[10,:] < 100)[np.newaxis,:]
-    BasinData = np.ma.MaskedArray(BasinData,mask=BasinMask)
         
     return RawData,PatchData,BasinData
-
 
 def PropagateErrors(PatchData,BasinData):
        
