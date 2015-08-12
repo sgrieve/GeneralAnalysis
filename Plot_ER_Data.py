@@ -214,8 +214,14 @@ def reduced_chi_square(Residuals,Sc,DataErrs=None):
 
     #if we are fitting from patches or basins, get the std err and include in the chi squared    
     if DataErrs:
-        r_star = R_Star(Sc,DataErrs[1],DataErrs[0])           
-        chi_square = np.sum((Residuals/unp.std_devs(r_star))**2)        
+        r_star = R_Star(Sc,DataErrs[1],DataErrs[0])   
+        
+        temp = ((Residuals/unp.std_devs(r_star))**2)        
+        
+        #get rid of any divide by zero errors
+        temp[np.isinf(temp)] = 0        
+        chi_square = np.sum(temp)        
+        
     else:
         chi_square = np.sum(Residuals**2)
     
@@ -249,16 +255,13 @@ def GetBestFitSc(Method, Data, DataErrs=None):
 
     if Method.lower() == 'raw':
         Fit_Sc,_,infodict,_,_ = optimize.leastsq(Residuals, ScInit, args=(Data[4], Data[2], Data[3]),full_output=True)
-        chi = reduced_chi_square(infodict['fvec'],Fit_Sc[0]) 
-        print np.sum(infodict['fvec']**2.)
+        chi = reduced_chi_square(infodict['fvec'],Fit_Sc[0])         
     elif Method.lower() == 'patches':
         Fit_Sc,_,infodict,_,_ = optimize.leastsq(Residuals, ScInit, args=(Data[9], Data[1], Data[5]),full_output=True)
         chi = reduced_chi_square(infodict['fvec'],Fit_Sc[0],DataErrs)
-        print np.sum(infodict['fvec']**2.)
     elif Method.lower() == 'basins':
         Fit_Sc,_,infodict,_,_ = optimize.leastsq(Residuals, ScInit, args=(Data[3], Data[1], Data[2]),full_output=True)
         chi = reduced_chi_square(infodict['fvec'],Fit_Sc[0],DataErrs)
-        print np.sum(infodict['fvec']**2.)
         
     return Fit_Sc[0],chi
 
@@ -364,5 +367,5 @@ def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,DensityFlag,BinFlag,BinSize,PatchF
     #SavePlot(Path,Prefix,Format)    
     
 
-MakeThePlot('C:\\Users\\Stuart\\Dropbox\\data\\final\\','GM','patches',0,0,'',20,0,1,0,2,ForceSc=False,Format='png')
+MakeThePlot('C:\\Users\\Stuart\\Dropbox\\data\\final\\','CR','patches',0,0,'',20,0,1,0,2,ForceSc=False,Format='png')
 
