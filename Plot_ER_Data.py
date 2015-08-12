@@ -214,31 +214,23 @@ def reduced_chi_square(Residuals,Sc,DataErrs=None):
 
     #if we are fitting from patches or basins, get the std err and include in the chi squared    
     if DataErrs:
-        r_star = R_Star(Sc,DataErrs[1],DataErrs[0])        
-        chi_square = np.sum((Residuals/unp.std_devs(r_star))**2)
+        r_star = R_Star(Sc,DataErrs[1],DataErrs[0])           
+        chi_square = np.sum((Residuals/unp.std_devs(r_star))**2)        
     else:
         chi_square = np.sum(Residuals**2)
     
     # degrees of freedom, as we have 1 free parameter, Sc  
     d_o_f = Residuals.size-2
-        
+    
     return chi_square/d_o_f         
     
 
-def r_squared(Sc, R, LH, CHT,infodict):
-   
-    print infodict['fvec']
-    ss_err=(infodict['fvec']**2).sum()
-    #ss_tot=((y-y.mean())**2).sum()
-    #rsquared=1-(ss_err/ss_tot)   
-   
-   
-    modeled = R_Star_Model(E_Star(Sc,CHT,LH)) 
+def r_squared(Sc, R, LH, CHT ,infodict):
+
     measured = R_Star(Sc, R, LH)   
-   
     mean_measured = np.mean(measured)  
       
-    sqr_err_w_line = np.square((infodict['fvec']))#np.square((measured - modeled))
+    sqr_err_w_line = np.square(infodict['fvec'])
     sqr_err_mean = np.square((measured - mean_measured))
     
     r_sq = 1.-(np.sum(sqr_err_w_line)/np.sum(sqr_err_mean))    
@@ -257,13 +249,16 @@ def GetBestFitSc(Method, Data, DataErrs=None):
 
     if Method.lower() == 'raw':
         Fit_Sc,_,infodict,_,_ = optimize.leastsq(Residuals, ScInit, args=(Data[4], Data[2], Data[3]),full_output=True)
-        chi = reduced_chi_square(infodict['fvec'],Fit_Sc[0])        
+        chi = reduced_chi_square(infodict['fvec'],Fit_Sc[0]) 
+        print np.sum(infodict['fvec']**2.)
     elif Method.lower() == 'patches':
         Fit_Sc,_,infodict,_,_ = optimize.leastsq(Residuals, ScInit, args=(Data[9], Data[1], Data[5]),full_output=True)
         chi = reduced_chi_square(infodict['fvec'],Fit_Sc[0],DataErrs)
+        print np.sum(infodict['fvec']**2.)
     elif Method.lower() == 'basins':
         Fit_Sc,_,infodict,_,_ = optimize.leastsq(Residuals, ScInit, args=(Data[3], Data[1], Data[2]),full_output=True)
         chi = reduced_chi_square(infodict['fvec'],Fit_Sc[0],DataErrs)
+        print np.sum(infodict['fvec']**2.)
         
     return Fit_Sc[0],chi
 
@@ -369,5 +364,5 @@ def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,DensityFlag,BinFlag,BinSize,PatchF
     #SavePlot(Path,Prefix,Format)    
     
 
-MakeThePlot('C:\\Users\\Stuart\\Dropbox\\data\\final\\','CR','raw',0,0,'',20,0,1,0,2,ForceSc=False,Format='png')
+MakeThePlot('C:\\Users\\Stuart\\Dropbox\\data\\final\\','GM','patches',0,0,'',20,0,1,0,2,ForceSc=False,Format='png')
 
