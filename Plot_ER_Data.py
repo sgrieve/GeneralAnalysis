@@ -210,8 +210,14 @@ def Residuals(Sc, R, LH, CHT):
     return R_Star_Model(E_Star(Sc,CHT,LH)) - R_Star(Sc, R, LH)
 
 
-def reduced_chi_square(Residuals):
-    chi_square = np.sum(Residuals**2)
+def reduced_chi_square(Residuals,Sc,DataErrs=None):
+
+    #if we are fitting from patches or basins, get the std err and include in the chi squared    
+    if DataErrs:
+        r_star = R_Star(Sc,DataErrs[1],DataErrs[0])        
+        chi_square = np.sum((Residuals/unp.std_devs(r_star))**2)
+    else:
+        chi_square = np.sum(Residuals**2)
     
     # degrees of freedom, as we have 1 free parameter, Sc  
     d_o_f = Residuals.size-2
@@ -244,22 +250,22 @@ def DrawCurve():
     x = np.arange(0.01, 1000, 0.1)
     plt.plot(x, R_Star_Model(x), 'k-', linewidth=2, label='Nonlinear Flux Law')
         
-def GetBestFitSc(Method, RawData, PatchData, BasinData):
+def GetBestFitSc(Method, Data, DataErrs=None):
 
     ScInit = 0.8  # Need to have an initial for the optimizer, any valid Sc value can be used - will not impact the final value
     Fit_Sc = [] #Need to initialize this in case Method is incorrectly defined. Need some error handling!
 
     if Method.lower() == 'raw':
-        Fit_Sc,_,infodict,_,_ = optimize.leastsq(Residuals, ScInit, args=(RawData[4], RawData[2], RawData[3]),full_output=True)
-        print r_squared(Fit_Sc[0], RawData[4], RawData[2], RawData[3],infodict)                    
+        Fit_Sc,_,infodict,_,_ = optimize.leastsq(Residuals, ScInit, args=(Data[4], Data[2], Data[3]),full_output=True)
+        chi = reduced_chi_square(infodict['fvec'],Fit_Sc[0])        
     elif Method.lower() == 'patches':
-        Fit_Sc,_,_,_,_ = optimize.leastsq(Residuals, ScInit, args=(PatchData[9], PatchData[1], PatchData[5]),full_output=True)
-        print r_squared(Fit_Sc[0], PatchData[9], PatchData[1], PatchData[5])
+        Fit_Sc,_,infodict,_,_ = optimize.leastsq(Residuals, ScInit, args=(Data[9], Data[1], Data[5]),full_output=True)
+        chi = reduced_chi_square(infodict['fvec'],Fit_Sc[0],DataErrs)
     elif Method.lower() == 'basins':
-        Fit_Sc,_,_,_,_ = optimize.leastsq(Residuals, ScInit, args=(BasinData[3], BasinData[1], BasinData[2]),full_output=True)
-        print r_squared(Fit_Sc[0], BasinData[3], BasinData[1], BasinData[2])
+        Fit_Sc,_,infodict,_,_ = optimize.leastsq(Residuals, ScInit, args=(Data[3], Data[1], Data[2]),full_output=True)
+        chi = reduced_chi_square(infodict['fvec'],Fit_Sc[0],DataErrs)
         
-    return Fit_Sc[0]
+    return Fit_Sc[0],chi
 
 def Labels(Sc,Method,ForceSc):
     plt.legend(loc=4)
@@ -329,7 +335,14 @@ def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,DensityFlag,BinFlag,BinSize,PatchF
     if ForceSc:
         Sc = ForceSc
     else:
-        Sc = GetBestFitSc(Sc_Method, RawData, PatchData, BasinData)
+        if Sc_Method.lower() == 'raw':
+            Sc,chi = GetBestFitSc(Sc_Method, RawData)
+        if Sc_Method.lower() == 'patches':
+            Sc,chi = GetBestFitSc(Sc_Method, PatchData, PatchDataErrs)            
+        if Sc_Method.lower() == 'basins':
+            Sc,chi = GetBestFitSc(Sc_Method, BasinData, BasinDataErrs)
+
+    print chi
     
     if RawFlag:
         PlotRaw(Sc,RawData)
@@ -356,5 +369,5 @@ def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,DensityFlag,BinFlag,BinSize,PatchF
     #SavePlot(Path,Prefix,Format)    
     
 
-MakeThePlot('C:\\Users\\Stuart\\Dropbox\\data\\final\\','NC','raw',0,0,'',20,0,1,0,2,ForceSc=0.8,Format='png')
+MakeThePlot('C:\\Users\\Stuart\\Dropbox\\data\\final\\','CR','raw',0,0,'',20,0,1,0,2,ForceSc=False,Format='png')
 
