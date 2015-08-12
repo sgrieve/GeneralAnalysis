@@ -62,9 +62,9 @@ def LoadData(Path,Prefix,Order):
             PatchData[a][i] = split[a]
     
     # Mask out the rows where the mean slope is > 0.4
-    PatchMask = np.empty(PatchData.shape,dtype=bool)
-    PatchMask[:,:] = (PatchData[13,:] > 0.4)[np.newaxis,:]
-    PatchData = np.ma.MaskedArray(PatchData,mask=PatchMask)
+    #PatchMask = np.empty(PatchData.shape,dtype=bool)
+    #PatchMask[:,:] = (PatchData[13,:] > 0.4)[np.newaxis,:]
+    #PatchData = np.ma.MaskedArray(PatchData,mask=PatchMask)
     
     #Next, repeat the process for the Basin data
     with open(Path+Prefix+'_E_R_Star_Basin_'+str(Order)+'_Data.csv','r') as basin:
@@ -113,8 +113,7 @@ def PropagateErrors(PatchData,BasinData):
     basinCHT = unp.uarray(BasinData[6],PatchData[8][:len(BasinData[0])])
     
     return (patchLH,patchR,patchCHT),(basinLH,basinR,basinCHT)
-    
-    
+        
 
 def SetUpPlot():
     rcParams['font.family'] = 'sans-serif'
@@ -189,8 +188,12 @@ def PlotPatchBins(Sc,PatchData,NumBins,MinimumBinSize=10):
     plt.errorbar(bin_x, bin_y, yerr=bin_std_y, fmt='bo')
     
 def PlotPatches(Sc,PatchData):                     
-        plt.errorbar(E_Star(Sc,PatchData[6],PatchData[2]),R_Star(Sc,PatchData[10],PatchData[2]),
-        fmt='ro',label='Hilltop Patch Data')     
+
+    e_star = E_Star(Sc,PatchData[2],PatchData[0])
+    r_star = R_Star(Sc,PatchData[1],PatchData[0])
+    
+    plt.errorbar(unp.nominal_values(e_star),unp.nominal_values(r_star),yerr=unp.std_devs(r_star),xerr=unp.std_devs(e_star),
+    fmt='ro',label='Hilltop Patch Data')     
     
 def PlotBasins(Sc,BasinData):
         plt.errorbar(E_Star(Sc,BasinData[6],BasinData[5]),R_Star(Sc,BasinData[7],BasinData[5]),
@@ -213,7 +216,7 @@ def R_Star_Model(x):
     return (1./x) * (np.sqrt(1.+(x*x)) - np.log(0.5*(1. + np.sqrt(1.+(x*x)))) - 1.)
 
 def E_Star(Sc,CHT,LH):
-    return (2.*np.fabs(CHT)*LH)/Sc
+    return (2.*unp.fabs(CHT)*LH)/Sc
 
 def R_Star(Sc, R, LH):
     return R/(LH*Sc)
@@ -263,9 +266,6 @@ def GetBestFitSc(Method, RawData, PatchData, BasinData):
 
     if Method.lower() == 'raw':
         Fit_Sc,_,infodict,_,_ = optimize.leastsq(Residuals, ScInit, args=(RawData[4], RawData[2], RawData[3]),full_output=True)
-        for t in infodict['fvec']:
-            if t< 0:
-                print t
         print r_squared(Fit_Sc[0], RawData[4], RawData[2], RawData[3],infodict)                    
     elif Method.lower() == 'patches':
         Fit_Sc,_,_,_,_ = optimize.leastsq(Residuals, ScInit, args=(PatchData[9], PatchData[1], PatchData[5]),full_output=True)
@@ -335,8 +335,8 @@ def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,DensityFlag,BinFlag,BinSize,PatchF
 
     RawData,PatchData,BasinData = LoadData(Path,Prefix,Order)
 
-    PropagateErrors(PatchData,BasinData)
-    """       
+    PatchDataErrs, BasinDataErrs = PropagateErrors(PatchData,BasinData)
+    
     SetUpPlot()
     
     DrawCurve()
@@ -351,7 +351,7 @@ def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,DensityFlag,BinFlag,BinSize,PatchF
     if DensityFlag:
         PlotRawDensity(Sc,RawData,DensityFlag)
     if PatchFlag:
-        PlotPatches(Sc,PatchData)
+        PlotPatches(Sc,PatchDataErrs)
     if BinFlag.lower() == 'patches':
         PlotPatchBins(Sc,PatchData,BinSize)
     elif BinFlag.lower() == 'raw':
@@ -369,7 +369,7 @@ def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,DensityFlag,BinFlag,BinSize,PatchF
     plt.show()
 
     #SavePlot(Path,Prefix,Format)    
-    """
+    
 
-MakeThePlot('C:\\Users\\Stuart\\Dropbox\\data\\final\\','NC','raw',0,0,'',20,1,1,0,2,ForceSc=False,Format='png')
+MakeThePlot('C:\\Users\\Stuart\\Dropbox\\data\\final\\','NC','raw',0,0,'',20,0,1,0,2,ForceSc=0.8,Format='png')
 
