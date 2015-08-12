@@ -12,6 +12,7 @@ import scipy.optimize as optimize
 import bin_data as Bin
 from scipy.stats import gaussian_kde
 from scipy.stats import sem
+from uncertainties import unumpy as unp
 
 def LoadData(Path,Prefix,Order):
 
@@ -59,7 +60,7 @@ def LoadData(Path,Prefix,Order):
         split = p.split(',')
         for a in range(no_of_cols):
             PatchData[a][i] = split[a]
-
+    
     # Mask out the rows where the mean slope is > 0.4
     PatchMask = np.empty(PatchData.shape,dtype=bool)
     PatchMask[:,:] = (PatchData[13,:] > 0.4)[np.newaxis,:]
@@ -99,8 +100,21 @@ def LoadData(Path,Prefix,Order):
     return RawData,PatchData,BasinData
 
 
+def PropagateErrors(PatchData,BasinData):
+       
+    #median, sem
+    patchLH = unp.uarray(PatchData[2],PatchData[4])
+    patchR = unp.uarray(PatchData[10],PatchData[12])
+    patchCHT = unp.uarray(PatchData[5],PatchData[8])
     
-
+    #still need to generate basin error data
+    basinLH = unp.uarray(BasinData[5],PatchData[4][:len(BasinData[0])])
+    basinR = unp.uarray(BasinData[7],PatchData[12][:len(BasinData[0])])
+    basinCHT = unp.uarray(BasinData[6],PatchData[8][:len(BasinData[0])])
+    
+    return (patchLH,patchR,patchCHT),(basinLH,basinR,basinCHT)
+    
+    
 
 def SetUpPlot():
     rcParams['font.family'] = 'sans-serif'
@@ -320,7 +334,9 @@ def OCRRoering():
 def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,DensityFlag,BinFlag,BinSize,PatchFlag,BasinFlag,LandscapeFlag,Order,ForceSc=False,Format='png'):
 
     RawData,PatchData,BasinData = LoadData(Path,Prefix,Order)
-       
+
+    PropagateErrors(PatchData,BasinData)
+    """       
     SetUpPlot()
     
     DrawCurve()
@@ -353,7 +369,7 @@ def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,DensityFlag,BinFlag,BinSize,PatchF
     plt.show()
 
     #SavePlot(Path,Prefix,Format)    
-
+    """
 
 MakeThePlot('C:\\Users\\Stuart\\Dropbox\\data\\final\\','NC','raw',0,0,'',20,1,1,0,2,ForceSc=False,Format='png')
 
