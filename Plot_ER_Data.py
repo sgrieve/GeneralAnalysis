@@ -11,6 +11,7 @@ import numpy as np
 import scipy.optimize as optimize
 import bin_data as Bin
 from scipy.stats import gaussian_kde
+from scipy.stats import sem
 
 def LoadData(Path,Prefix,Order):
 
@@ -96,6 +97,10 @@ def LoadData(Path,Prefix,Order):
     BasinData = np.ma.MaskedArray(BasinData,mask=BasinMask)
         
     return RawData,PatchData,BasinData
+
+
+    
+
 
 def SetUpPlot():
     rcParams['font.family'] = 'sans-serif'
@@ -184,9 +189,10 @@ def PlotLandscapeAverage(Sc,RawData):
     R_Star_avg = np.median(R_Star_temp)
     E_Star_std = np.std(E_Star_temp)
     R_Star_std = np.std(R_Star_temp)
-
+    E_Star_serr = sem(E_Star_temp)
+    R_Star_serr = sem(R_Star_temp)
     plt.plot(E_Star_avg,R_Star_avg,'ko',label='Landscape Average')
-    plt.errorbar(E_Star_avg,R_Star_avg,yerr=R_Star_std,xerr=E_Star_std,
+    plt.errorbar(E_Star_avg,R_Star_avg,yerr=R_Star_serr,xerr=E_Star_serr,
     fmt='ko')
 
 def R_Star_Model(x):    
@@ -200,6 +206,16 @@ def R_Star(Sc, R, LH):
 
 def Residuals(Sc, R, LH, CHT):
     return R_Star_Model(E_Star(Sc,CHT,LH)) - R_Star(Sc, R, LH)
+
+
+def reduced_chi_square(Residuals):
+    chi_square = np.sum(Residuals**2)
+    
+    # degrees of freedom, as we have 1 free parameter, Sc  
+    d_o_f = Residuals.size-2
+        
+    return chi_square/d_o_f         
+    
 
 def r_squared(Sc, R, LH, CHT,infodict):
    
@@ -233,6 +249,9 @@ def GetBestFitSc(Method, RawData, PatchData, BasinData):
 
     if Method.lower() == 'raw':
         Fit_Sc,_,infodict,_,_ = optimize.leastsq(Residuals, ScInit, args=(RawData[4], RawData[2], RawData[3]),full_output=True)
+        for t in infodict['fvec']:
+            if t< 0:
+                print t
         print r_squared(Fit_Sc[0], RawData[4], RawData[2], RawData[3],infodict)                    
     elif Method.lower() == 'patches':
         Fit_Sc,_,_,_,_ = optimize.leastsq(Residuals, ScInit, args=(PatchData[9], PatchData[1], PatchData[5]),full_output=True)
@@ -328,13 +347,13 @@ def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,DensityFlag,BinFlag,BinSize,PatchF
 
     #OCRRoering()
     #GMRoering()
-    CRHurst()
+    #CRHurst()
     
     Labels(Sc,Sc_Method,ForceSc)
-    #plt.show()
+    plt.show()
 
-    SavePlot(Path,Prefix,Format)    
+    #SavePlot(Path,Prefix,Format)    
 
 
-MakeThePlot('C:\\Users\\Stuart\\Dropbox\\data\\final\\','CR','raw',0,0,'Patches',20,0,0,0,2,ForceSc=0.72,Format='png')
+MakeThePlot('C:\\Users\\Stuart\\Dropbox\\data\\final\\','NC','raw',0,0,'',20,1,1,0,2,ForceSc=False,Format='png')
 
