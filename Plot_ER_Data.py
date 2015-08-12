@@ -38,11 +38,6 @@ def LoadData(Path,Prefix,Order):
             RawData[a][i] = split[a]
     #now we have a transformed 2d array of our raw data
 
-    # Mask out the rows where the mean slope is > 0.4
-    RawMask = np.empty(RawData.shape,dtype=bool)
-    RawMask[:,:] = (RawData[5,:] > 0.4)[np.newaxis,:]
-    RawData = np.ma.MaskedArray(RawData,mask=RawMask)
-
     #Next, repeat the process for the patch data
     with open(Path+Prefix+'_E_R_Star_Patch_Data.csv','r') as patch:
         no_of_cols = len(patch.readline().split(','))
@@ -60,12 +55,7 @@ def LoadData(Path,Prefix,Order):
         split = p.split(',')
         for a in range(no_of_cols):
             PatchData[a][i] = split[a]
-    
-    # Mask out the rows where the mean slope is > 0.4
-    #PatchMask = np.empty(PatchData.shape,dtype=bool)
-    #PatchMask[:,:] = (PatchData[13,:] > 0.4)[np.newaxis,:]
-    #PatchData = np.ma.MaskedArray(PatchData,mask=PatchMask)
-    
+        
     #Next, repeat the process for the Basin data
     with open(Path+Prefix+'_E_R_Star_Basin_'+str(Order)+'_Data.csv','r') as basin:
         no_of_cols = len(basin.readline().split(','))
