@@ -136,7 +136,7 @@ def PlotRawDensity(Sc,RawData,Thin):
     cbar = plt.colorbar()
     cbar.set_label('Probability Distribution Function')
 
-def PlotBins(Sc,RawData,NumBins,MinimumBinSize=100):
+def PlotBins(Sc,RawData,NumBins,MinimumBinSize=100,ErrorBars=True):
     E_s = E_Star(Sc, RawData[3], RawData[2])
     R_s = R_Star(Sc, RawData[4], RawData[2])
 
@@ -147,10 +147,13 @@ def PlotBins(Sc,RawData,NumBins,MinimumBinSize=100):
     bin_y = np.ma.masked_where(count<MinimumBinSize, bin_y)
     #these lines produce a meaningless warning - don't know how to solve it yet.
 
-    #only plot errorbars for y as std dev of x is just the bin width == meaningless
-    plt.errorbar(bin_x, bin_y, yerr=bin_std_y, fmt='bo',label='Binned Raw Data')
+    if ErrorBars:
+        #only plot errorbars for y as std dev of x is just the bin width == meaningless     
+        plt.errorbar(bin_x, bin_y, yerr=std_err_y, fmt='bo',label='Binned Raw Data')
+    else:
+        plt.errorbar(bin_x, bin_y, fmt='bo',label='Binned Raw Data')
 
-def PlotPatchBins(Sc,PatchData,NumBins,MinimumBinSize=10):
+def PlotPatchBins(Sc,PatchData,NumBins,MinimumBinSize=10,ErrorBars=True):
     E_s = E_Star(Sc,PatchData[6],PatchData[2])
     R_s = R_Star(Sc,PatchData[10],PatchData[2])
 
@@ -161,35 +164,50 @@ def PlotPatchBins(Sc,PatchData,NumBins,MinimumBinSize=10):
     bin_y = np.ma.masked_where(count<MinimumBinSize, bin_y)
     #these lines produce a meaningless warning - don't know how to solve it yet.
 
-    #only plot errorbars for y as std dev of x is just the bin width == meaningless     
-    plt.errorbar(bin_x, bin_y, yerr=bin_std_y, fmt='bo',label='Binned Patch Data')
+    if ErrorBars:
+        #only plot errorbars for y as std dev of x is just the bin width == meaningless     
+        plt.errorbar(bin_x, bin_y, yerr=std_err_y, fmt='bo',label='Binned Patch Data')
+    else:
+        plt.errorbar(bin_x, bin_y, fmt='bo',label='Binned Patch Data')
     
-def PlotPatches(Sc,PatchData):                     
+def PlotPatches(Sc,PatchData,ErrorBars):                     
 
     e_star = E_Star(Sc,PatchData[2],PatchData[0])
     r_star = R_Star(Sc,PatchData[1],PatchData[0])
+    if ErrorBars:
+        plt.errorbar(unp.nominal_values(e_star),unp.nominal_values(r_star),yerr=unp.std_devs(r_star),xerr=unp.std_devs(e_star),
+                     fmt='ro',label='Hilltop Patch Data')     
+    else:
+        plt.errorbar(unp.nominal_values(e_star),unp.nominal_values(r_star),
+                     fmt='ro',label='Hilltop Patch Data')     
     
-    plt.errorbar(unp.nominal_values(e_star),unp.nominal_values(r_star),yerr=unp.std_devs(r_star),xerr=unp.std_devs(e_star),
-    fmt='ro',label='Hilltop Patch Data')     
-    
-def PlotBasins(Sc,BasinData):
+def PlotBasins(Sc,BasinData,ErrorBars):
     e_star = E_Star(Sc,BasinData[2],BasinData[0])
     r_star = R_Star(Sc,BasinData[1],BasinData[0])
     
-    plt.errorbar(unp.nominal_values(e_star),unp.nominal_values(r_star),yerr=unp.std_devs(r_star),xerr=unp.std_devs(e_star),
-        fmt='go',label='Basin Data')
+    if ErrorBars:
+        plt.errorbar(unp.nominal_values(e_star),unp.nominal_values(r_star),yerr=unp.std_devs(r_star),xerr=unp.std_devs(e_star),
+                     fmt='go',label='Basin Data')
+    else:
+        plt.errorbar(unp.nominal_values(e_star),unp.nominal_values(r_star),
+                     fmt='go',label='Basin Data')
+
             
-def PlotLandscapeAverage(Sc,RawData):
+def PlotLandscapeAverage(Sc,RawData,ErrorBars):
     E_Star_temp = E_Star(Sc,RawData[3],RawData[2])
     R_Star_temp = R_Star(Sc,RawData[4],RawData[2])
     E_Star_avg = np.median(E_Star_temp)
     R_Star_avg = np.median(R_Star_temp)
-    E_Star_std = np.std(E_Star_temp)
-    R_Star_std = np.std(R_Star_temp)
-    E_Star_serr = sem(E_Star_temp)
-    R_Star_serr = sem(R_Star_temp)
-    plt.errorbar(E_Star_avg,R_Star_avg,yerr=R_Star_serr,xerr=E_Star_serr,
-    fmt='ko',label='Landscape Average')
+    
+    if ErrorBars:
+        E_Star_std = np.std(E_Star_temp)
+        R_Star_std = np.std(R_Star_temp)
+        E_Star_serr = sem(E_Star_temp)
+        R_Star_serr = sem(R_Star_temp)    
+        plt.errorbar(E_Star_avg,R_Star_avg,yerr=R_Star_serr,xerr=E_Star_serr,
+                     fmt='ko',label='Landscape Average')
+    else:
+        plt.errorbar(E_Star_avg,R_Star_avg, fmt='ko',label='Landscape Average')
 
 def R_Star_Model(x):    
     return (1./x) * (np.sqrt(1.+(x*x)) - np.log(0.5*(1. + np.sqrt(1.+(x*x)))) - 1.)
@@ -312,7 +330,7 @@ def OCRRoering():
     
     plt.errorbar(x,y,yerr,xerr,'k^',label='Roering et al. 2007')
     
-def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,DensityFlag,BinFlag,BinSize,PatchFlag,BasinFlag,LandscapeFlag,Order,ForceSc=False,Format='png'):
+def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,DensityFlag,BinFlag,NumBins,PatchFlag,BasinFlag,LandscapeFlag,Order,ForceSc=False,ErrorBarFlag=True,Format='png'):
 
     RawData,PatchData,BasinData = LoadData(Path,Prefix,Order)
 
@@ -336,18 +354,18 @@ def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,DensityFlag,BinFlag,BinSize,PatchF
     
     if RawFlag:
         PlotRaw(Sc,RawData)
-    if DensityFlag:
+    if DensityFlag:        
         PlotRawDensity(Sc,RawData,DensityFlag)
     if PatchFlag:
-        PlotPatches(Sc,PatchDataErrs)
+        PlotPatches(Sc,PatchDataErrs,ErrorBarFlag)
     if BinFlag.lower() == 'patches':
-        PlotPatchBins(Sc,PatchData,BinSize)
+        PlotPatchBins(Sc,PatchData,NumBins,ErrorBars=ErrorBarFlag)
     elif BinFlag.lower() == 'raw':
-        PlotBins(Sc,RawData,BinSize)
+        PlotBins(Sc,RawData,NumBins,ErrorBars=ErrorBarFlag)
     if BasinFlag:
-        PlotBasins(Sc,BasinDataErrs)
+        PlotBasins(Sc,BasinDataErrs,ErrorBarFlag)
     if LandscapeFlag:
-        PlotLandscapeAverage(Sc,RawData)
+        PlotLandscapeAverage(Sc,RawData,ErrorBarFlag)
 
     #OCRRoering()
     #GMRoering()
@@ -358,7 +376,7 @@ def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,DensityFlag,BinFlag,BinSize,PatchF
 
     #SavePlot(Path,Prefix,Format)    
     
-MakeThePlot('C:\\Users\\Stuart\\Dropbox\\data\\final\\','GM','patches',0,100,'',20,0,0,0,2,ForceSc=0.8,Format='png')
+MakeThePlot('C:\\Users\\Stuart\\Dropbox\\data\\final\\','NC','patches',0,25,'patches',20,1,1,1,2,ForceSc=0.8,ErrorBarFlag=False,Format='png')
 
 #for l in ['GM','OR','NC','CR']:
 #    for m in ['raw','patches','basins']:
