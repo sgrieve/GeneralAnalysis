@@ -7,6 +7,7 @@ Created on Thu Jun 11 14:01:05 2015
 """
 import matplotlib.pyplot as plt
 from matplotlib import rcParams
+from matplotlib import container
 import numpy as np
 import scipy.optimize as optimize
 import bin_data as Bin
@@ -62,8 +63,8 @@ def LoadData(Path,Prefix,Order):
         basindata = basin.readlines()
 
     #dimensions will be 11Xlen(basindata) no_of_cols = 11
-    #and the row order will follow the header format in the input file:
-    #Basin_ID LH_mean CHT_mean Relief_mean Slope_mean LH_median CHT_median Relief_median Slope_median Area Count
+    #and the row order will follow the header format in the input file:    
+    #Basin_ID,LH_mean,CHT_mean,Relief_mean,Slope_mean,LH_median,CHT_median,Relief_median,Slope_median,LH_StdDev,CHT_StdDev,Relief_StdDev,Slope_StdDev,LH_StdErr,CHT_StdErr,Relief_StdErr,Slope_StdErr,Area,Count
 
     #Should probably also compute the basin std devs and std errs. The code is in LSDBasin,
     #it just needs added to the printing.
@@ -109,6 +110,8 @@ def SetUpPlot():
 
     plt.ylim(0.05,1.1)
     plt.xlim(0.1,1000)
+    
+    return ax
 
 def PlotRaw(Sc,RawData):
     plt.scatter(E_Star(Sc,RawData[3],RawData[2]),R_Star(Sc,RawData[4],RawData[2]),
@@ -265,9 +268,13 @@ def GetBestFitSc(Method, Data, DataErrs=None):
         
     return Fit_Sc[0],chi
 
-def Labels(Sc,Method,ForceSc):
-    plt.legend(loc=4)
-
+def Labels(Sc,Method,ForceSc,ax):
+    
+    #remove errorbars from the legend    
+    handles, labels = ax.get_legend_handles_labels()   
+    handles = [h[0] if isinstance(h, container.ErrorbarContainer) else h for h in handles]        
+    ax.legend(handles, labels, loc=4, numpoints=1)    
+    
     #in case Method is invalid
     fit_description = ' = '
 
@@ -326,7 +333,7 @@ def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,DensityFlag,BinFlag,BinSize,PatchF
 
     PatchDataErrs, BasinDataErrs = PropagateErrors(PatchData,BasinData)
     
-    SetUpPlot()
+    ax = SetUpPlot()
     
     DrawCurve()
     
@@ -340,7 +347,7 @@ def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,DensityFlag,BinFlag,BinSize,PatchF
         if Sc_Method.lower() == 'basins':
             Sc,chi = GetBestFitSc(Sc_Method, BasinData, BasinDataErrs)
 
-    print chi
+    print Sc
     
     if RawFlag:
         PlotRaw(Sc,RawData)
@@ -359,13 +366,17 @@ def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,DensityFlag,BinFlag,BinSize,PatchF
 
     #OCRRoering()
     #GMRoering()
-    #CRHurst()
+    CRHurst()
     
-    Labels(Sc,Sc_Method,ForceSc)
+    Labels(Sc,Sc_Method,ForceSc, ax)
     plt.show()
 
     #SavePlot(Path,Prefix,Format)    
     
+MakeThePlot('C:\\Users\\Stuart\\Dropbox\\data\\final\\','GM','patches',0,0,'',20,0,1,0,2,ForceSc=0.8,Format='png')
 
-MakeThePlot('C:\\Users\\Stuart\\Dropbox\\data\\final\\','CR','patches',0,0,'',20,0,1,0,2,ForceSc=False,Format='png')
+#for l in ['GM','OR','NC','CR']:
+#    for m in ['raw','patches','basins']:
+#        print l,m        
+#        MakeThePlot('C:\\Users\\Stuart\\Dropbox\\data\\final\\',l,m,0,0,'',20,0,1,0,2,ForceSc=False,Format='png')
 
