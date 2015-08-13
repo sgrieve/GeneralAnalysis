@@ -149,9 +149,7 @@ def PlotBins(Sc,RawData,NumBins,MinimumBinSize=100):
     #these lines produce a meaningless warning - don't know how to solve it yet.
 
     #only plot errorbars for y as std dev of x is just the bin width == meaningless
-    #double plot to make better labels
-    plt.plot(bin_x, bin_y, 'bo',label='Binned Raw Data')    
-    plt.errorbar(bin_x, bin_y, yerr=bin_std_y, fmt='bo')
+    plt.errorbar(bin_x, bin_y, yerr=bin_std_y, fmt='bo',label='Binned Raw Data')
 
 def PlotPatchBins(Sc,PatchData,NumBins,MinimumBinSize=10):
     E_s = E_Star(Sc,PatchData[6],PatchData[2])
@@ -164,10 +162,8 @@ def PlotPatchBins(Sc,PatchData,NumBins,MinimumBinSize=10):
     bin_y = np.ma.masked_where(count<MinimumBinSize, bin_y)
     #these lines produce a meaningless warning - don't know how to solve it yet.
 
-    #only plot errorbars for y as std dev of x is just the bin width == meaningless
-    #double plot to make nicer labels     
-    plt.plot(bin_x, bin_y, 'bo',label='Binned Patch Data')
-    plt.errorbar(bin_x, bin_y, yerr=bin_std_y, fmt='bo')
+    #only plot errorbars for y as std dev of x is just the bin width == meaningless     
+    plt.errorbar(bin_x, bin_y, yerr=bin_std_y, fmt='bo',label='Binned Patch Data')
     
 def PlotPatches(Sc,PatchData):                     
 
@@ -193,9 +189,8 @@ def PlotLandscapeAverage(Sc,RawData):
     R_Star_std = np.std(R_Star_temp)
     E_Star_serr = sem(E_Star_temp)
     R_Star_serr = sem(R_Star_temp)
-    plt.plot(E_Star_avg,R_Star_avg,'ko',label='Landscape Average')
     plt.errorbar(E_Star_avg,R_Star_avg,yerr=R_Star_serr,xerr=E_Star_serr,
-    fmt='ko')
+    fmt='ko',label='Landscape Average')
 
 def R_Star_Model(x):    
     return (1./x) * (np.sqrt(1.+(x*x)) - np.log(0.5*(1. + np.sqrt(1.+(x*x)))) - 1.)
@@ -212,16 +207,14 @@ def R_Star(Sc, R, LH):
 def Residuals(Sc, R, LH, CHT):
     return R_Star_Model(E_Star(Sc,CHT,LH)) - R_Star(Sc, R, LH)
 
-
 def reduced_chi_square(Residuals,Sc,DataErrs=None):
 
     #if we are fitting from patches or basins, get the std err and include in the chi squared    
     if DataErrs:
         r_star = R_Star(Sc,DataErrs[1],DataErrs[0])   
         
-        temp = ((Residuals/unp.std_devs(r_star))**2)        
-        
         #get rid of any divide by zero errors
+        temp = ((Residuals/unp.std_devs(r_star))**2)        
         temp[np.isinf(temp)] = 0        
         chi_square = np.sum(temp)        
         
@@ -233,7 +226,6 @@ def reduced_chi_square(Residuals,Sc,DataErrs=None):
     
     return chi_square/d_o_f         
     
-
 def r_squared(Sc, R, LH, CHT ,infodict):
 
     measured = R_Star(Sc, R, LH)   
@@ -241,10 +233,8 @@ def r_squared(Sc, R, LH, CHT ,infodict):
       
     sqr_err_w_line = np.square(infodict['fvec'])
     sqr_err_mean = np.square((measured - mean_measured))
-    
-    r_sq = 1.-(np.sum(sqr_err_w_line)/np.sum(sqr_err_mean))    
-        
-    return r_sq
+           
+    return 1.-(np.sum(sqr_err_w_line)/np.sum(sqr_err_mean))
 
 def DrawCurve():
     #plot the e* r* curve from roering 2007
@@ -311,9 +301,7 @@ def GMRoering():
     xerr = [0.7]*2
     yerr = [0.17,0.2]
         
-    #make better labels by double plotting
-    plt.plot(x,y,'k^',label='Roering et al. 2007')
-    plt.errorbar(x,y,yerr,xerr,'k^')
+    plt.errorbar(x,y,yerr,xerr,'k^',label='Roering et al. 2007')
     
 def OCRRoering():
     #plots the gm datapoints from roering 2007 for testing
@@ -323,9 +311,7 @@ def OCRRoering():
     xerr = [2.1]*2
     yerr = [0.23,0.18]
     
-    #make better labels by double plotting
-    plt.plot(x,y,'k^',label='Roering et al. 2007')
-    plt.errorbar(x,y,yerr,xerr,'k^')
+    plt.errorbar(x,y,yerr,xerr,'k^',label='Roering et al. 2007')
     
 def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,DensityFlag,BinFlag,BinSize,PatchFlag,BasinFlag,LandscapeFlag,Order,ForceSc=False,Format='png'):
 
