@@ -88,13 +88,12 @@ def PropagateErrors(PatchData,BasinData):
     patchCHT = unp.uarray(PatchData[5],PatchData[8])
     
     #still need to generate basin error data
-    basinLH = unp.uarray(BasinData[5],PatchData[4][:len(BasinData[0])])
-    basinR = unp.uarray(BasinData[7],PatchData[12][:len(BasinData[0])])
-    basinCHT = unp.uarray(BasinData[6],PatchData[8][:len(BasinData[0])])
+    basinLH = unp.uarray(BasinData[5],BasinData[13])
+    basinR = unp.uarray(BasinData[7],BasinData[15])
+    basinCHT = unp.uarray(BasinData[6],BasinData[14])
     
     return (patchLH,patchR,patchCHT),(basinLH,basinR,basinCHT)
         
-
 def SetUpPlot():
     rcParams['font.family'] = 'sans-serif'
     rcParams['font.sans-serif'] = ['arial']
@@ -352,14 +351,14 @@ def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,DensityFlag,BinFlag,BinSize,PatchF
 
     #OCRRoering()
     #GMRoering()
-    CRHurst()
+    #CRHurst()
     
     Labels(Sc,Sc_Method,ForceSc, ax)
     plt.show()
 
     #SavePlot(Path,Prefix,Format)    
     
-MakeThePlot('C:\\Users\\Stuart\\Dropbox\\data\\final\\','GM','patches',0,0,'',20,0,1,0,2,ForceSc=0.8,Format='png')
+MakeThePlot('C:\\Users\\Stuart\\Dropbox\\data\\final\\','GM','patches',0,100,'',20,0,0,0,2,ForceSc=0.8,Format='png')
 
 #for l in ['GM','OR','NC','CR']:
 #    for m in ['raw','patches','basins']:
