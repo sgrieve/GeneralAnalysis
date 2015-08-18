@@ -229,5 +229,3 @@ pip-log.txt
 *.csv
 curve_fit_test.py
 bf_test.py
-stack_images.py
-stack_images.py
