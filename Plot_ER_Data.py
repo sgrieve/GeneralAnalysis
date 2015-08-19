@@ -63,22 +63,19 @@ def LoadData(Path,Prefix,Order):
         no_of_cols = len(basin.readline().split(','))
         basindata = basin.readlines()
 
-    #dimensions will be 11Xlen(basindata) no_of_cols = 11
+    #dimensions will be 11Xlen(basindata) no_of_cols = 19
     #and the row order will follow the header format in the input file:    
     #Basin_ID,LH_mean,CHT_mean,Relief_mean,Slope_mean,LH_median,CHT_median,Relief_median,Slope_median,LH_StdDev,CHT_StdDev,Relief_StdDev,Slope_StdDev,LH_StdErr,CHT_StdErr,Relief_StdErr,Slope_StdErr,Area,Count
-
-    #Should probably also compute the basin std devs and std errs. The code is in LSDBasin,
-    #it just needs added to the printing.
     
     no_of_lines = len(basindata)
 
     BasinData = np.zeros((no_of_cols,no_of_lines),dtype='float64')
-
+    
     for i,d in enumerate(basindata):
         split = d.split(',')
         for a in range(no_of_cols):
             BasinData[a][i] = split[a]
-        
+            
     return RawData,PatchData,BasinData
 
 def PropagateErrors(PatchData,BasinData):
@@ -92,7 +89,7 @@ def PropagateErrors(PatchData,BasinData):
     basinLH = unp.uarray(BasinData[5],BasinData[13])
     basinR = unp.uarray(BasinData[7],BasinData[15])
     basinCHT = unp.uarray(BasinData[6],BasinData[14])
-    
+  
     return (patchLH,patchR,patchCHT),(basinLH,basinR,basinCHT)
         
 def SetUpPlot():
@@ -188,6 +185,23 @@ def PlotPatches(Sc,PatchData,ErrorBars):
     else:
         plt.errorbar(unp.nominal_values(e_star),unp.nominal_values(r_star),
                      fmt='ro',label='Hilltop Patch Data')     
+
+def PlotPatchesArea(Sc,PatchData,thresh,alpha):
+    e_star = E_Star(Sc,PatchData[6],PatchData[2])
+    r_star = R_Star(Sc,PatchData[10],PatchData[2])
+    area = PatchData[17]
+
+    x = []
+    y = []
+    A = []
+    
+    for a,b,s in zip(e_star,r_star,area):
+        if s > thresh:
+            x.append(a)
+            y.append(b)
+            A.append(s)
+                    
+    plt.plot(x,y,color='k',alpha=alpha,marker='o',linestyle='',label='Min. Patch Area = '+str(thresh))
     
 def PlotBasins(Sc,BasinData,ErrorBars):
     e_star = E_Star(Sc,BasinData[2],BasinData[0])
@@ -200,6 +214,20 @@ def PlotBasins(Sc,BasinData,ErrorBars):
         plt.errorbar(unp.nominal_values(e_star),unp.nominal_values(r_star),
                      fmt='go',label='Basin Data')
 
+def PlotBasinsArea(Sc,BasinData,thresh,alpha):
+    e_star = E_Star(Sc,BasinData[6],BasinData[5])
+    r_star = R_Star(Sc,BasinData[7],BasinData[5])
+    area = BasinData[18]
+
+    x = []
+    y = []
+    
+    for a,b,s in zip(e_star,r_star,area):
+        if s > thresh:
+            x.append(a)
+            y.append(b)
+    
+    plt.plot(x,y,color='k',alpha=alpha,marker='o',linestyle='',label='Min. Basin Data Points = '+str(thresh))
             
 def PlotLandscapeAverage(Sc,RawData,ErrorBars):
     E_Star_temp = E_Star(Sc,RawData[3],RawData[2])
@@ -350,9 +378,8 @@ def Labels(Sc,Method,ForceSc,ax):
     elif Method.lower() == 'basins':
         fit_description = ' from basin average data = '
 
-    if ForceSc:
-        plt.title('Mean values')
-        #plt.title('$\mathregular{S_c}$ forced as = ' + str(round(Sc,2)))
+    if ForceSc:        
+        plt.title('$\mathregular{S_c}$ forced as = ' + str(round(Sc,2)))        
     else:
         plt.title('Best fit $\mathregular{S_c}$'+fit_description+str(round(Sc,2)))
 
@@ -392,9 +419,7 @@ def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,DensityFlag,BinFlag,NumBins,PatchF
     RawData,PatchData,BasinData = LoadData(Path,Prefix,Order)
 
     PatchDataErrs, BasinDataErrs = PropagateErrors(PatchData,BasinData)
-    
-    BootstrapSc(Sc_Method, PatchData)    
-    
+        
     ax = SetUpPlot()
     
     DrawCurve()
@@ -431,12 +456,12 @@ def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,DensityFlag,BinFlag,NumBins,PatchF
     #CRHurst()
     
     Labels(Sc,Sc_Method,ForceSc, ax)
-    plt.show()
+    #plt.show()
 
-    #SavePlot(Path,Prefix+'_mean',Format)    
+    SavePlot(Path,Prefix+'_basin_order',Format)    
     
     
-MakeThePlot('C:\\Users\\Stuart\\Dropbox\\data\\final\\','CR','patches',0,0,'patches',20,0,0,0,2,ForceSc=0.8,ErrorBarFlag=True,Format='png')
+MakeThePlot('C:\\Users\\Stuart\\Dropbox\\data\\final\\','GM','patches',0,0,'',20,0,1,0,2,ForceSc=0.8,ErrorBarFlag=False,Format='png')
 
 #for l in ['GM','OR','NC','CR']:
 #    for m in ['raw','patches','basins']:
