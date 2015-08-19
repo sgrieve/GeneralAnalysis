@@ -137,7 +137,7 @@ def PlotRawDensity(Sc,RawData,Thin):
     cbar = plt.colorbar()
     cbar.set_label('Probability Distribution Function')
 
-def PlotBins(Sc,RawData,NumBins,MinimumBinSize=100,ErrorBars=True):
+def PlotRawBins(Sc,RawData,NumBins,MinimumBinSize=100,ErrorBars=True):
     E_s = E_Star(Sc, RawData[3], RawData[2])
     R_s = R_Star(Sc, RawData[4], RawData[2])
 
@@ -275,10 +275,10 @@ def GetBestFitSc(Method, Data, DataErrs=None):
         Fit_Sc,_,infodict,_,_ = optimize.leastsq(Residuals, ScInit, args=(Data[4], Data[2], Data[3]),full_output=True)
         chi = reduced_chi_square(infodict['fvec'],Fit_Sc[0])         
     elif Method.lower() == 'patches':
-        Fit_Sc,_,infodict,_,_ = optimize.leastsq(Residuals, ScInit, args=(Data[9], Data[1], Data[5]),full_output=True)
+        Fit_Sc,_,infodict,_,_ = optimize.leastsq(Residuals, ScInit, args=(Data[10], Data[2], Data[6]),full_output=True)
         chi = reduced_chi_square(infodict['fvec'],Fit_Sc[0],DataErrs)
     elif Method.lower() == 'basins':
-        Fit_Sc,_,infodict,_,_ = optimize.leastsq(Residuals, ScInit, args=(Data[3], Data[1], Data[2]),full_output=True)
+        Fit_Sc,_,infodict,_,_ = optimize.leastsq(Residuals, ScInit, args=(Data[7], Data[5], Data[6]),full_output=True)
         chi = reduced_chi_square(infodict['fvec'],Fit_Sc[0],DataErrs)
         
     return Fit_Sc[0],chi
@@ -333,7 +333,7 @@ def Labels(Sc,Method,ForceSc,ax):
     #color scatterplot symbols like colormap
     for h in handles:        
         if isinstance(h, collections.PathCollection):            
-            h.set_color('y')
+            h.set_color('r')
             h.set_edgecolor('')
                 
     ax.legend(handles, labels, loc=4, numpoints=1,scatterpoints=1)    
@@ -420,7 +420,7 @@ def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,DensityFlag,BinFlag,NumBins,PatchF
     if BinFlag.lower() == 'patches':
         PlotPatchBins(Sc,PatchData,NumBins,ErrorBars=ErrorBarFlag)
     elif BinFlag.lower() == 'raw':
-        PlotBins(Sc,RawData,NumBins,ErrorBars=ErrorBarFlag)
+        PlotRawBins(Sc,RawData,NumBins,ErrorBars=ErrorBarFlag)
     if BasinFlag:
         PlotBasins(Sc,BasinDataErrs,ErrorBarFlag)
     if LandscapeFlag:
