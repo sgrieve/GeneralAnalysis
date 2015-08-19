@@ -85,7 +85,7 @@ def PropagateErrors(PatchData,BasinData):
     #median, sem
     patchLH = unp.uarray(PatchData[2],PatchData[4])
     patchR = unp.uarray(PatchData[10],PatchData[12])
-    patchCHT = unp.uarray(PatchData[5],PatchData[8])
+    patchCHT = unp.uarray(PatchData[6],PatchData[8])
     
     #still need to generate basin error data
     basinLH = unp.uarray(BasinData[5],BasinData[13])
@@ -275,6 +275,47 @@ def GetBestFitSc(Method, Data, DataErrs=None):
         
     return Fit_Sc[0],chi
 
+def BootstrapSc(Method, Data, n=1000):
+    tmp = []
+    #need to convert the LH,R,CHT data into a serial 1D array before bootstrapping    
+    if Method == 'patches':
+        for i in range(len(Data[0])):
+            tmp.append(SerializeData(Data[2][i],Data[10][i],Data[6][i]))
+    if Method == 'basins':
+        for i in range(len(Data[0])):
+            tmp.append(SerializeData(Data[5][i],Data[7][i],Data[6][i]))
+   
+    ToSample = np.array(tmp)
+    
+    Scs = []    
+    for i in range(n):
+        sample = np.random.choice(ToSample,len(ToSample),replace=True)
+        LH,R,CHT = UnserializeList(sample)
+        sc,_,_,_,_ = optimize.leastsq(Residuals, 0.8, args=(R, LH, CHT),full_output=True)
+        
+        Scs.append(sc[0])
+    #        mean          upper bound                               lower bound    
+    return np.mean(Scs),np.percentile(Scs,97.5)-np.mean(Scs), np.mean(Scs)-np.percentile(Scs,2.5)
+        
+def SerializeData(LH, R, CHT):
+    return str([LH, R, CHT])[1:-1]
+
+def UnserializeList(serial_list):
+    LH=[]
+    R=[]
+    CHT=[]
+    for s in serial_list:
+       lh,r,cht = UnserializeData(s)
+       LH.append(lh)
+       R.append(r)
+       CHT.append(cht)
+     
+    return np.array(LH),np.array(R),np.array(CHT)
+
+def UnserializeData(serial):
+    split = [float(s) for s in serial.split(',')]
+    return split[0],split[1],split[2]
+    
 def Labels(Sc,Method,ForceSc,ax):
     
     #remove errorbars from the legend    
@@ -295,7 +336,8 @@ def Labels(Sc,Method,ForceSc,ax):
         fit_description = ' from basin average data = '
 
     if ForceSc:
-        plt.title('$\mathregular{S_c}$ forced as = ' + str(round(Sc,2)))
+        plt.title('Mean values')
+        #plt.title('$\mathregular{S_c}$ forced as = ' + str(round(Sc,2)))
     else:
         plt.title('Best fit $\mathregular{S_c}$'+fit_description+str(round(Sc,2)))
 
@@ -336,6 +378,8 @@ def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,DensityFlag,BinFlag,NumBins,PatchF
 
     PatchDataErrs, BasinDataErrs = PropagateErrors(PatchData,BasinData)
     
+    BootstrapSc(Sc_Method, PatchData)    
+    
     ax = SetUpPlot()
     
     DrawCurve()
@@ -346,11 +390,11 @@ def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,DensityFlag,BinFlag,NumBins,PatchF
         if Sc_Method.lower() == 'raw':
             Sc,chi = GetBestFitSc(Sc_Method, RawData)
         if Sc_Method.lower() == 'patches':
-            Sc,chi = GetBestFitSc(Sc_Method, PatchData, PatchDataErrs)            
+            #Sc,chi = GetBestFitSc(Sc_Method, PatchData, PatchDataErrs) 
+            Sc,upper,lower = BootstrapSc(Sc_Method, PatchData)
         if Sc_Method.lower() == 'basins':
-            Sc,chi = GetBestFitSc(Sc_Method, BasinData, BasinDataErrs)
-
-    print Sc
+            #Sc,chi = GetBestFitSc(Sc_Method, BasinData, BasinDataErrs)
+            Sc,upper,lower = BootstrapSc(Sc_Method, PatchData)
     
     if RawFlag:
         PlotRaw(Sc,RawData)
@@ -372,14 +416,16 @@ def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,DensityFlag,BinFlag,NumBins,PatchF
     #CRHurst()
     
     Labels(Sc,Sc_Method,ForceSc, ax)
-    plt.show()
+    #plt.show()
 
-    #SavePlot(Path,Prefix,Format)    
+    SavePlot(Path,Prefix+'_mean',Format)    
     
-MakeThePlot('C:\\Users\\Stuart\\Dropbox\\data\\final\\','NC','patches',0,25,'patches',20,1,1,1,2,ForceSc=0.8,ErrorBarFlag=False,Format='png')
+    
+MakeThePlot('C:\\Users\\Stuart\\Dropbox\\data\\final\\','OR','patches',0,0,'',20,1,0,0,2,ForceSc=False,ErrorBarFlag=False,Format='png')
 
 #for l in ['GM','OR','NC','CR']:
 #    for m in ['raw','patches','basins']:
 #        print l,m        
-#        MakeThePlot('C:\\Users\\Stuart\\Dropbox\\data\\final\\',l,m,0,0,'',20,0,1,0,2,ForceSc=False,Format='png')
+#        MakeThePlot('C:\\Users\\Stuart\\Dropbox\\data\\final\\',l,m,0,0,'',20,0,1,0,2,ForceSc=False,ErrorBarFlag=False,Format='png')
+
 
