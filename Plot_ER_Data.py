@@ -8,6 +8,7 @@ Created on Thu Jun 11 14:01:05 2015
 import matplotlib.pyplot as plt
 from matplotlib import rcParams
 from matplotlib import container
+from matplotlib import collections
 import numpy as np
 import scipy.optimize as optimize
 import bin_data as Bin
@@ -113,8 +114,8 @@ def SetUpPlot():
     return ax
 
 def PlotRaw(Sc,RawData):
-    plt.scatter(E_Star(Sc,RawData[3],RawData[2]),R_Star(Sc,RawData[4],RawData[2]),
-    marker='.',alpha=0.2,label='Raw Data')
+    plt.plot(E_Star(Sc,RawData[3],RawData[2]),R_Star(Sc,RawData[4],RawData[2]),
+    'k.',alpha=0.2,label='Raw Data')
     
 def PlotRawDensity(Sc,RawData,Thin):
     #http://stackoverflow.com/a/20107592/1627162
@@ -148,8 +149,11 @@ def PlotBins(Sc,RawData,NumBins,MinimumBinSize=100,ErrorBars=True):
     #these lines produce a meaningless warning - don't know how to solve it yet.
 
     if ErrorBars:
-        #only plot errorbars for y as std dev of x is just the bin width == meaningless     
-        plt.errorbar(bin_x, bin_y, yerr=std_err_y, fmt='bo',label='Binned Raw Data')
+        #only plot errorbars for y as std dev of x is just the bin width == meaningless         
+        plt.scatter(bin_x,bin_y,c=count,s=50,edgecolor='',cmap=plt.get_cmap("autumn_r"),label='Binned Raw Data', zorder=100)
+        plt.errorbar(bin_x, bin_y, yerr=std_err_y, fmt=None,ecolor='k', zorder=0) 
+        cbar = plt.colorbar()
+        cbar.set_label('Number of values per bin')
     else:
         plt.errorbar(bin_x, bin_y, fmt='bo',label='Binned Raw Data')
 
@@ -165,10 +169,14 @@ def PlotPatchBins(Sc,PatchData,NumBins,MinimumBinSize=10,ErrorBars=True):
     #these lines produce a meaningless warning - don't know how to solve it yet.
 
     if ErrorBars:
-        #only plot errorbars for y as std dev of x is just the bin width == meaningless     
-        plt.errorbar(bin_x, bin_y, yerr=std_err_y, fmt='bo',label='Binned Patch Data')
+        #only plot errorbars for y as std dev of x is just the bin width == meaningless                  
+        plt.scatter(bin_x,bin_y,c=count,s=50,edgecolor='',cmap=plt.get_cmap("autumn_r"),label='Binned Patch Data', zorder=100)
+        plt.errorbar(bin_x, bin_y, yerr=std_err_y, fmt=None,ecolor='k', zorder=0) 
+        cbar = plt.colorbar()
+        cbar.set_label('Number of values per bin')
+
     else:
-        plt.errorbar(bin_x, bin_y, fmt='bo',label='Binned Patch Data')
+        plt.errorbar(bin_x, bin_y, fmt='bo',label='Binned Patch Data')        
     
 def PlotPatches(Sc,PatchData,ErrorBars):                     
 
@@ -320,8 +328,15 @@ def Labels(Sc,Method,ForceSc,ax):
     
     #remove errorbars from the legend    
     handles, labels = ax.get_legend_handles_labels()   
-    handles = [h[0] if isinstance(h, container.ErrorbarContainer) else h for h in handles]        
-    ax.legend(handles, labels, loc=4, numpoints=1)    
+    handles = [h[0] if isinstance(h, container.ErrorbarContainer) else h for h in handles]  
+    
+    #color scatterplot symbols like colormap
+    for h in handles:        
+        if isinstance(h, collections.PathCollection):            
+            h.set_color('y')
+            h.set_edgecolor('')
+                
+    ax.legend(handles, labels, loc=4, numpoints=1,scatterpoints=1)    
     
     #in case Method is invalid
     fit_description = ' = '
@@ -416,12 +431,12 @@ def MakeThePlot(Path,Prefix,Sc_Method,RawFlag,DensityFlag,BinFlag,NumBins,PatchF
     #CRHurst()
     
     Labels(Sc,Sc_Method,ForceSc, ax)
-    #plt.show()
+    plt.show()
 
-    SavePlot(Path,Prefix+'_mean',Format)    
+    #SavePlot(Path,Prefix+'_mean',Format)    
     
     
-MakeThePlot('C:\\Users\\Stuart\\Dropbox\\data\\final\\','OR','patches',0,0,'',20,1,0,0,2,ForceSc=False,ErrorBarFlag=False,Format='png')
+MakeThePlot('C:\\Users\\Stuart\\Dropbox\\data\\final\\','CR','patches',0,0,'patches',20,0,0,0,2,ForceSc=0.8,ErrorBarFlag=True,Format='png')
 
 #for l in ['GM','OR','NC','CR']:
 #    for m in ['raw','patches','basins']:
