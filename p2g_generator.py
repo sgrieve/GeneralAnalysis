@@ -26,9 +26,9 @@ def p2gScripter(InputLAS, Prefix, UTMZone, Hillshade=False):
         gdal.write('#!/bin/bash\n')
 
         print '\nWriting p2g script to ' + Prefix + '_p2g_Script_1.sh'
-        print 'Writing p2g script to ' + Prefix + '_gdal_Script_2.sh'
+        print 'Writing GDAL script to ' + Prefix + '_gdal_Script_2.sh'
 
-        for r in Resolutions[::-1]:
+        for r in Resolutions:
             Resolution = str(r)
             OuputName = Prefix + '_' + Resolution
             SearchRadius = str(int(math.ceil(r * math.sqrt(2))))
@@ -48,7 +48,7 @@ def p2gScripter(InputLAS, Prefix, UTMZone, Hillshade=False):
             gdal.write('nice ' + gdal_str + '\n')
             gdal.write(del_str)
             if Hillshade:
-                hs_str = ('gdaldem hillshade -of PNG %s_DEM.bil %s_HS.bil\n'
+                hs_str = ('gdaldem hillshade -of ENVI %s_DEM.bil %s_HS.bil\n'
                           % (OuputName, OuputName))
                 gdal.write(hs_str)
 
