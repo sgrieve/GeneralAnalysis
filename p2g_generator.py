@@ -58,8 +58,8 @@ if __name__ == "__main__":
     if len(sys.argv) != 5 and len(sys.argv) != 4:
         sys.exit('\nIncorrect number of arguments.\n\nPlease enter a point '
                  'cloud filename, a filename prefix, a UTM zone number and set '
-                 'the hillshade flag. Valid filetypes are LAS and ASC\n\n'
-                 'e.g. p2g_generator.py SC_point_cloud.las SC 10 True\n')
+                 'the hillshade flag (optional). Valid filetypes are LAS and '
+                 'ASC\n\ne.g. p2g_generator.py SC_point_cloud.las SC 10 True\n')
 
     if (len(sys.argv) == 5):
         p2gScripter(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
