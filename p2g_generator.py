@@ -18,8 +18,7 @@ def p2gScripter(InputLAS, Prefix, UTMZone, Hillshade=False):
     Resolutions = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 18, 20, 22, 24,
                    26, 28, 30, 35, 40, 45, 50, 55, 60]
 
-    with (open(Prefix + '_p2g_Script_1.sh', 'w') as p2g,
-          open(Prefix + '_gdal_Script_2.sh', 'w') as gdal):
+    with open(Prefix + '_p2g_Script_1.sh', 'w') as p2g, open(Prefix + '_gdal_Script_2.sh', 'w') as gdal:
 
         # write the shebangs for the 2 scripts
         p2g.write('#!/bin/bash\n')
@@ -39,7 +38,7 @@ def p2gScripter(InputLAS, Prefix, UTMZone, Hillshade=False):
 
             gdal_str = ("gdalwarp -t_srs \'+proj=utm +zone=%s +datum=WGS84\' "
                         "-of ENVI %s.idw.asc %s_DEM.bil"
-                        % UTMZone, OuputName, OuputName)
+                        % (UTMZone, OuputName, OuputName))
 
             del_str = ('rm %s.idw.asc\n' % OuputName)
 
@@ -49,7 +48,7 @@ def p2gScripter(InputLAS, Prefix, UTMZone, Hillshade=False):
             gdal.write(del_str)
             if Hillshade:
                 hs_str = ('gdaldem hillshade -of PNG %s_DEM.bil %s_HS.png\n'
-                          % OuputName, OuputName)
+                          % (OuputName, OuputName))
                 gdal.write(hs_str)
 
     print '\tScripts successfully written.'
@@ -62,4 +61,4 @@ if __name__ == "__main__":
                  'the hillshade flag. Valid filetypes are LAS and ASC\n\n'
                  'e.g. p2g_generator.py SC_point_cloud.las SC 10 True\n')
 
-    p2gScripter(sys.argv[1], sys.argv[2])
+    p2gScripter(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
