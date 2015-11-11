@@ -25,10 +25,10 @@ def p2gScripter(InputLAS, Prefix, UTMZone, Hillshade=False):
         p2g.write('#!/bin/bash\n')
         gdal.write('#!/bin/bash\n')
 
-        print 'Writing p2g script to ' + Prefix + '_p2g_Script_1.sh'
+        print '\nWriting p2g script to ' + Prefix + '_p2g_Script_1.sh'
         print 'Writing p2g script to ' + Prefix + '_gdal_Script_2.sh'
 
-        for r in Resolutions:
+        for r in Resolutions[::-1]:
             Resolution = str(r)
             OuputName = Prefix + '_' + Resolution
             SearchRadius = str(int(math.ceil(r * math.sqrt(2))))
