@@ -18,7 +18,8 @@ def p2gScripter(InputLAS, Prefix, UTMZone, Hillshade=False):
     Resolutions = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 18, 20, 22, 24,
                    26, 28, 30, 35, 40, 45, 50, 55, 60]
 
-    with open(Prefix + '_p2g_Script_1.sh', 'w') as p2g, open(Prefix + '_gdal_Script_2.sh', 'w') as gdal:
+    with open(Prefix + '_p2g_Script_1.sh', 'w') as p2g, \
+            open(Prefix + '_gdal_Script_2.sh', 'w') as gdal:
 
         # write the shebangs for the 2 scripts
         p2g.write('#!/bin/bash\n')
