@@ -43,8 +43,8 @@ def p2gScripter(InputLAS, Prefix, UTMZone, Hillshade=False):
             del_str = ('rm %s.idw.asc\n' % OuputName)
 
             # write the commands to the 2 scripts
-            p2g.write('nohup nice ' + p2g_str + ' &\n')
-            gdal.write('nohup nice ' + gdal_str + ' &\n')
+            p2g.write('nice ' + p2g_str + '\n')
+            gdal.write('nice ' + gdal_str + '\n')
             gdal.write(del_str)
             if Hillshade:
                 hs_str = ('gdaldem hillshade -of PNG %s_DEM.bil %s_HS.png\n'
@@ -55,10 +55,13 @@ def p2gScripter(InputLAS, Prefix, UTMZone, Hillshade=False):
 
 if __name__ == "__main__":
     import sys
-    if len(sys.argv) != 5:
+    if len(sys.argv) != 5 and len(sys.argv) != 4:
         sys.exit('\nIncorrect number of arguments.\n\nPlease enter a point '
                  'cloud filename, a filename prefix, a UTM zone number and set '
                  'the hillshade flag. Valid filetypes are LAS and ASC\n\n'
                  'e.g. p2g_generator.py SC_point_cloud.las SC 10 True\n')
 
-    p2gScripter(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
+    if (len(sys.argv) == 5):
+        p2gScripter(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
+    if (len(sys.argv) == 4):
+        p2gScripter(sys.argv[1], sys.argv[2], sys.argv[3])
