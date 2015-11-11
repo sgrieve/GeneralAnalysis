@@ -48,7 +48,7 @@ def p2gScripter(InputLAS, Prefix, UTMZone, Hillshade=False):
             gdal.write('nice ' + gdal_str + '\n')
             gdal.write(del_str)
             if Hillshade:
-                hs_str = ('gdaldem hillshade -of PNG %s_DEM.bil %s_HS.png\n'
+                hs_str = ('gdaldem hillshade -of PNG %s_DEM.bil %s_HS.bil\n'
                           % (OuputName, OuputName))
                 gdal.write(hs_str)
 
