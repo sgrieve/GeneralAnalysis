@@ -1,7 +1,14 @@
-def p2gScripter(InputLAS, Prefix):
+def p2gScripter(InputLAS, Prefix, UTMZone, Hillshade=False):
     '''
-    Code to generate a bash file that will run points2grid to generate DEMs from
-    a pointcloud at a range of resolutions from 1 meter to 60 meters.
+    Code to generate two bash files, the first will run points2grid to generate
+    DEMs from a pointcloud at a range of resolutions from 1 meter to 60 meters.
+    The second will project the DEMs into UTM and convert the files to *.bil
+    format. The hillshade switch can be set to true to also generate a hillshade
+    of each DEM using GDAL.
+
+    This script will need modified to run on the Southern Hemisphere. It does
+    not test if the UTM zone given is correct. The generated scripts will delete
+    intermediate files as it goes to save space.
 
     Does not run the code, just generates the script.
     '''
@@ -11,10 +18,15 @@ def p2gScripter(InputLAS, Prefix):
     Resolutions = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 18, 20, 22, 24,
                    26, 28, 30, 35, 40, 45, 50, 55, 60]
 
-    with open(Prefix + '_p2g_Script_1.sh', 'w') as f:
-        f.write('#!/bin/bash\n')
+    with (open(Prefix + '_p2g_Script_1.sh', 'w') as p2g,
+          open(Prefix + '_gdal_Script_2.sh', 'w') as gdal):
+
+        # write the shebangs for the 2 scripts
+        p2g.write('#!/bin/bash\n')
+        gdal.write('#!/bin/bash\n')
 
         print 'Writing p2g script to ' + Prefix + '_p2g_Script_1.sh'
+        print 'Writing p2g script to ' + Prefix + '_gdal_Script_2.sh'
 
         for r in Resolutions:
             Resolution = str(r)
@@ -25,15 +37,29 @@ def p2gScripter(InputLAS, Prefix):
                        '--output_format=arc --resolution=%s -r %s'
                        % (InputLAS, OuputName, Resolution, SearchRadius))
 
-            f.write('nohup nice ' + p2g_str + ' &\n')
+            gdal_str = ("gdalwarp -t_srs \'+proj=utm +zone=%s +datum=WGS84\' "
+                        "-of ENVI %s.idw.asc %s_DEM.bil"
+                        % UTMZone, OuputName, OuputName)
 
-    print '\tScript successfully written.'
+            del_str = ('rm %s.idw.asc\n' % OuputName)
+
+            # write the commands to the 2 scripts
+            p2g.write('nohup nice ' + p2g_str + ' &\n')
+            gdal.write('nohup nice ' + gdal_str + ' &\n')
+            gdal.write(del_str)
+            if Hillshade:
+                hs_str = ('gdaldem hillshade -of PNG %s_DEM.bil %s_HS.png\n'
+                          % OuputName, OuputName)
+                gdal.write(hs_str)
+
+    print '\tScripts successfully written.'
 
 if __name__ == "__main__":
     import sys
-    if len(sys.argv) != 3:
+    if len(sys.argv) != 5:
         sys.exit('\nIncorrect number of arguments.\n\nPlease enter a point '
-                 'cloud filename and a filename prefix. Valid filetypes are LAS'
-                 ' and ASC\n\ne.g. p2g_generator.py SC_point_cloud.las SC\n')
+                 'cloud filename, a filename prefix, a UTM zone number and set '
+                 'the hillshade flag. Valid filetypes are LAS and ASC\n\n'
+                 'e.g. p2g_generator.py SC_point_cloud.las SC 10 True\n')
 
     p2gScripter(sys.argv[1], sys.argv[2])
